@@ -59,7 +59,7 @@ public class Ping{
                 Thread.sleep(100);
             }
             System.out.printf(CLEARLINE + "Tasks finished: " + currentTasks + "/" + numTasks, "");
-            threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
             System.out.println("\nDONE!");
         }
         catch(Exception e){
