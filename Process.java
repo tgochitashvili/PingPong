@@ -1,8 +1,5 @@
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.URI;
-import java.net.UnknownHostException;
 
 import java.util.List;
 
@@ -19,10 +16,6 @@ public class Process implements Runnable {
     private static final String USER_AGENT = "Mozilla/5.0";
     public void run(){
         try{
-            // InetAddress inet = InetAddress.fgetb(this.URLNode.URL);
-
-            // URLNode.isChecked = inet.isReachable(timeout);
-
             URL url = new URL(URLNode.URL);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
@@ -31,12 +24,15 @@ public class Process implements Runnable {
             con.setConnectTimeout(timeout);
             con.setReadTimeout(timeout);
             con.connect();
-            URLNode.response = con.getResponseCode() + " - " + con.getResponseMessage();
+
+            URLNode.response = con.getResponseMessage();
+            URLNode.responseCode = "" + con.getResponseCode();
+            
             con.disconnect();
         }
         catch(Exception e){
-            URLNode.isChecked = true;
             URLNode.response = e.getMessage();
+            URLNode.responseCode = "-1";
         }
         finally{
             synchronized(responseList) {

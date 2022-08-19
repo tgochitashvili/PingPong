@@ -1,11 +1,10 @@
-import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,9 +13,9 @@ import java.io.File;
 import java.io.FileWriter;
 public class Ping{
     final static boolean DEBUG = false;
+    
+    final static String CLEARLINE = "\r%50s\r";
     public static void main(String[]args) throws UnknownHostException, IOException{
-        System.setProperty("sun.net.spi.nameservice.nameservers", "8.8.8.8");
-        System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
         String foldername = ".\\urls";
         File folder = new File(foldername);
         List<String> urlsList = new LinkedList<String>();
@@ -35,16 +34,33 @@ public class Ping{
         int nThreads = Runtime.getRuntime().availableProcessors()*5;
         System.out.println("Threads: " + nThreads);
         int ttl = 1000;
-        ExecutorService threadPool = Executors.newFixedThreadPool(nThreads);
+        long timeout = ttl*urlsList.size();
+        ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads);
         
         for(String url:urlsList){
             threadPool.submit(
                 new Process(url, ttl, nodeList)
             );
         }
+        long currentTasks = threadPool.getCompletedTaskCount();
+        long numTasks = urlsList.size();
         try{
             threadPool.shutdown();
+            System.out.println();
+            long start = System.currentTimeMillis();
+            String[] symbArray = {"/","-","\\","|"};
+            LinkedList<String> symbols = new LinkedList<String>(Arrays.asList(symbArray));
+            for(;
+                currentTasks < numTasks && System.currentTimeMillis()-start<timeout;
+                currentTasks = threadPool.getCompletedTaskCount()
+                ){
+                System.out.printf(CLEARLINE + "Requests executed: " + currentTasks + "/" + numTasks + "  " + symbols.getFirst(), "");
+                symbols.add(symbols.removeFirst());
+                Thread.sleep(100);
+            }
+            System.out.printf(CLEARLINE + "Tasks finished: " + currentTasks + "/" + numTasks, "");
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            System.out.println("\nDONE!");
         }
         catch(Exception e){
             e.printStackTrace();
@@ -60,7 +76,7 @@ public class Ping{
             bWriter = new BufferedWriter(fWriter);
             pWriter = new PrintWriter(bWriter);
             for(UrlNode node: nodeList){
-                pWriter.println(node.URL + ": " + node.response);
+                pWriter.println(node.URL + ": " + node.getFullResponse());
             }
         }
         catch(Exception e){

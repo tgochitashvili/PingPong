@@ -1,23 +1,23 @@
 public class UrlNode {
     public String URL;
     public String response;
-    // public boolean isTaken;
-    public boolean isChecked;
-    public UrlNode(String URL, String response, boolean isTaken, boolean isChecked){
+    public String responseCode;
+    public UrlNode(String URL, String response, String responseCode){
         this.URL = URL;
         this.response = response;
-        // this.isTaken = isTaken;
-        this.isChecked = isChecked;
+        this.responseCode = responseCode;
     }
     public UrlNode(String URL, String response){
         this.URL = URL;
         this.response = response;
-        // this.isTaken = false;
-        this.isChecked = false;
+        this.responseCode = "";
     }
     public UrlNode(String URL){
         this.URL = URL;
-        // this.isTaken = false;
-        this.isChecked = false;
+        this.response = "";
+        this.responseCode = "";
+    }
+    public String getFullResponse(){
+        return this.responseCode + " - " + this.response;
     }
 }
