@@ -14,7 +14,7 @@ import java.io.FileWriter;
 public class Ping{
     final static boolean DEBUG = false;
     
-    final static String CLEARLINE = "\r%50s\r";
+    
     public static void main(String[]args) throws UnknownHostException, IOException{
         String foldername = ".\\urls";
         File folder = new File(foldername);
@@ -24,7 +24,7 @@ public class Ping{
             System.exit(-1);
         }
         else{
-            urlsList.addAll(walk(folder));
+            urlsList.addAll(Helpers.walk(folder, DEBUG));
             if(DEBUG)
                 for(String url: urlsList)
                     System.out.println(url);
@@ -54,11 +54,11 @@ public class Ping{
                 currentTasks < numTasks && System.currentTimeMillis()-start<timeout;
                 currentTasks = threadPool.getCompletedTaskCount()
                 ){
-                System.out.printf(CLEARLINE + "Requests executed: " + currentTasks + "/" + numTasks + "  " + symbols.getFirst(), "");
+                System.out.printf(Helpers.CLEARLINE() + "Requests executed: " + currentTasks + "/" + numTasks + "  " + symbols.getFirst(), "");
                 symbols.add(symbols.removeFirst());
                 Thread.sleep(100);
             }
-            System.out.printf(CLEARLINE + "Tasks finished: " + currentTasks + "/" + numTasks, "");
+            System.out.printf(Helpers.CLEARLINE() + "Tasks finished: " + currentTasks + "/" + numTasks, "");
             threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
             System.out.println("\nDONE!");
         }
@@ -76,7 +76,7 @@ public class Ping{
             bWriter = new BufferedWriter(fWriter);
             pWriter = new PrintWriter(bWriter);
             for(UrlNode node: nodeList){
-                pWriter.println(node.URL + ": " + node.getFullResponse());
+                pWriter.println(node.URL + ": " + node.getFormattedResponse());
             }
         }
         catch(Exception e){
@@ -88,35 +88,5 @@ public class Ping{
                 pWriter.close();
             }
         }
-    }
-
-    public static List<String> walk(File folder){
-        if(DEBUG)
-            System.out.println("Reading from folder: " + folder.getName());
-        List<String> urlsArray = new LinkedList<String>();
-
-        for(File file: folder.listFiles()){
-            if(file.isDirectory()){
-                urlsArray.addAll(walk(file));
-            }
-            else {
-                Scanner scnr = null;
-                try{
-                    scnr = new Scanner(file);
-                    while(scnr.hasNextLine())
-                        urlsArray.add(scnr.nextLine());
-                    scnr.close();
-                }
-                catch(Exception e){
-                    e.printStackTrace();
-                }
-                finally{
-                    if(scnr!=null)
-                        scnr.close();
-                }
-            }
-        }
-
-        return urlsArray;
     }
 }

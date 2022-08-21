@@ -39,7 +39,6 @@ public class Process implements Runnable {
                 responseList.add(URLNode);
             }
         }
-        
         return;
     }
 }

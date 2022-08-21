@@ -17,7 +17,7 @@ public class UrlNode {
         this.response = "";
         this.responseCode = "";
     }
-    public String getFullResponse(){
+    public String getFormattedResponse(){
         return this.responseCode + " - " + this.response;
     }
 }
