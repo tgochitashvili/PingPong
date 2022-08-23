@@ -31,6 +31,7 @@ public class Ping{
         LinkedList<UrlNode> nodeList = new LinkedList<UrlNode>();
 
         int nThreads = Runtime.getRuntime().availableProcessors()*5;
+        nThreads = 500;
         System.out.println("Threads: " + nThreads);
         int ttl = 1000;
         long timeout = ttl*urlsList.size();
@@ -53,7 +54,7 @@ public class Ping{
                 currentTasks < numTasks && System.currentTimeMillis()-start<timeout;
                 currentTasks = threadPool.getCompletedTaskCount()
                 ){
-                System.out.printf(Helpers.CLEARLINE() + "Requests executed: " + currentTasks + "/" + numTasks + "  " + symbols.getFirst(), "");
+                System.out.printf(Helpers.CLEARLINE() + "Tasks finished: " + currentTasks + "/" + numTasks + "  " + symbols.getFirst(), "");
                 symbols.add(symbols.removeFirst());
                 Thread.sleep(100);
             }
