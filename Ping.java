@@ -15,7 +15,11 @@ public class Ping{
     
     
     public static void main(String[]args) throws UnknownHostException, IOException{
-        String foldername = ".\\urls";
+        run();
+    }
+
+    public static void run(){
+        String foldername = "./urls";
         File folder = new File(foldername);
         List<String> urlsList = new LinkedList<String>();
         if(!folder.isDirectory()){
@@ -31,7 +35,7 @@ public class Ping{
         LinkedList<UrlNode> nodeList = new LinkedList<UrlNode>();
 
         int nThreads = Runtime.getRuntime().availableProcessors()*5;
-        nThreads = 500;
+        nThreads = 50;
         System.out.println("Threads: " + nThreads);
         int ttl = 1000;
         long timeout = ttl*urlsList.size();

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Helpers {
+    
     public static List<String> walk(File folder, boolean DEBUG){
         if(DEBUG)
             System.out.println("Reading from folder: " + folder.getName());
