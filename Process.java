@@ -5,13 +5,12 @@ import java.util.List;
 
 
 public class Process implements Runnable {
-    public int timeout;
+    public static int connTimeout = 1000;
+    public static int readTimeout = 1000;
+    public static List<UrlNode> responseList;
     public UrlNode URLNode;
-    public List<UrlNode> responseList;
-    public Process(String URL, int timeout, List<UrlNode> responseList){
-        this.timeout = timeout;
+    public Process(String URL){
         URLNode = new UrlNode(URL);
-        this.responseList = responseList;
     }
     private static final String USER_AGENT = "Mozilla/5.0";
     public void run(){
@@ -21,8 +20,8 @@ public class Process implements Runnable {
 
             con.setRequestMethod("GET");
             con.setRequestProperty("User-Agent", USER_AGENT);
-            con.setConnectTimeout(timeout);
-            con.setReadTimeout(timeout);
+            con.setConnectTimeout(connTimeout);
+            con.setReadTimeout(readTimeout);
             con.connect();
 
             URLNode.response = con.getResponseMessage();

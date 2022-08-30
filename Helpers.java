@@ -2,8 +2,25 @@ import java.io.File;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Helpers {
+
+    public static HashMap<String,String> argsToMap(String[]args){
+        HashMap<String,String> argMap = new HashMap<String,String>();
+
+        for(int i = 0; i < args.length; i++){
+            String[] splitArg = args[i].split("=");
+            if(splitArg.length>2){
+                System.out.println("Incorrect argument format");
+                System.exit(-1);
+            }
+            argMap.put(splitArg[0],splitArg[1]);
+        }
+
+        return argMap;
+    }
     
     public static List<String> walk(File folder, boolean DEBUG){
         if(DEBUG)

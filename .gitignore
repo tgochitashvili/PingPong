@@ -2,3 +2,6 @@
 /urls
 *.class
 *.txt
+*.jar
+*.sh
+*.ps
