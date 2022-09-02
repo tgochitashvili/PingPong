@@ -26,8 +26,7 @@ public class TokenizedPlainReader implements AbstractReader{
                 urls.add(urlScnr.nextLine());
             }
             for(String server: servers){
-                
-                processNode = new ProcessNode();
+                processNode = new ProcessNode(server);
                 for(String url: urls){
                     String tempUrl = url.replaceAll(token,server);
                     processNode.processList.add(new Process(tempUrl));
