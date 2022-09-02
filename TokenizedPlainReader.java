@@ -25,7 +25,6 @@ public class TokenizedPlainReader implements AbstractReader{
             while(urlScnr.hasNextLine()){
                 urls.add(urlScnr.nextLine());
             }
-            System.out.println(servers.size());
             for(String server: servers){
                 
                 processNode = new ProcessNode();

@@ -30,11 +30,7 @@ public class Ping{
             
             System.exit(-1);
         }
-        for(String str: args){
-            System.out.println(str);
-        }
         HashMap<String,String> argMap = Helpers.argsToMap(args);
-        System.out.println(argMap);
 
         run(argMap);
     }
