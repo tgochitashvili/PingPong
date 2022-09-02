@@ -11,6 +11,7 @@ public class ProcessNode{
         this.serverName = "";
     }
     public ProcessNode(String serverName){
+        this.processList = new LinkedList<Process>();
         this.serverName = serverName;
     }
     public ProcessNode(){
