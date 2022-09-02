@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.w3c.dom.ranges.RangeException;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
@@ -20,7 +17,7 @@ public class Ping{
     final static boolean DEBUG = false;
     
     
-    public static void main(String[]args) throws UnknownHostException, IOException, RangeException{
+    public static void main(String[]args) throws UnknownHostException, IOException{
         if(args.length == 0){
             System.out.println("Please enter some arguments:");
             System.out.println("\t threads=x\t\t - Amount of threads to use for pinging");
