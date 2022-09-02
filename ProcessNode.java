@@ -1,5 +1,10 @@
-import java.util.List;
+import java.util.LinkedList;
 public class ProcessNode{
-    List<Process> processes;
-    List<UrlNode> UrlNodes;
+    LinkedList<Process> processList;
+    public ProcessNode(LinkedList<Process> processList){
+        this.processList = new LinkedList<Process>(processList);
+    }
+    public ProcessNode(){
+        this.processList = new LinkedList<Process>();
+    }
 }
