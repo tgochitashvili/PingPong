@@ -10,7 +10,6 @@ public class TokenizedPlainReader implements AbstractReader{
         ProcessNode processNode = null;
         Scanner urlScnr = null;
         Scanner serverScnr = null;
-
         try{
             File urlFile = new File(urlPath);
             urlScnr = new Scanner(urlFile);
@@ -45,7 +44,6 @@ public class TokenizedPlainReader implements AbstractReader{
                 serverScnr.close();
             }
         }
-
         return processList;
     }
 
@@ -75,8 +73,6 @@ public class TokenizedPlainReader implements AbstractReader{
                 scnr.close();
             }
         }
-
         return processList;
     }
-    
 }

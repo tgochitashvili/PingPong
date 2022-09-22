@@ -1,5 +1,7 @@
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
@@ -91,17 +93,18 @@ public class Ping{
         BufferedWriter bWriter =  null;
         PrintWriter pWriter = null;
         File out = null;
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss");    
         try{
-            out = new File("./Logs/Log-" + System.currentTimeMillis()+".txt");
-            fWriter = new FileWriter(out);
-            bWriter = new BufferedWriter(fWriter);
-            pWriter = new PrintWriter(bWriter);
             for(ProcessNode processNode: processNodes){
+
+                out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + processNode.serverName + ".txt");
+                fWriter = new FileWriter(out);
+                bWriter = new BufferedWriter(fWriter);
+                pWriter = new PrintWriter(bWriter, true);
                 for(Process process: processNode.processList){
                     pWriter.println(process.URLNode.URL + ": " + process.URLNode.getFormattedResponse());
                 }
             }
-            
         }
         catch(Exception e){
             e.printStackTrace();

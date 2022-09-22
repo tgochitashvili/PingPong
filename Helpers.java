@@ -19,6 +19,7 @@ public class Helpers {
     public static String CLEARLINE(int length){
         return "\r%" + length + "s\r";
     }
+
     public static String CLEARLINE(){
         return "\r%50s\r";
     }
