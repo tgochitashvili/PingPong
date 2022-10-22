@@ -20,27 +20,17 @@ public class Ping{
     
     public static void main(String[]args){
         if(args.length == 0){
-            
-            System.out.println("Please enter some arguments:");
-            System.out.println("\t threads=x\t\t - Amount of threads to use for pinging");
-            System.out.println("\t readtimeout=x\t\t - timeout limit for the response in milliseconds (default 1000)");
-            System.out.println("\t conntimeout=x\t\t - timeout limit for the connection in milliseconds (default 1000)");
-            System.out.println("\t serverpath=x\t\t - path to the file containing the server list, only works with a tokenized url list");
-            System.out.println("\t urlpath=x\t\t - path to the file containing either full or tokenized URLs");
-            System.out.println("\t token=x\t\t - token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
-            
-            System.exit(-1);
+            Helpers.printInfoAndQuit();
         }
         HashMap<String,String> argMap = Helpers.argsToMap(args);
+        if(argMap.getOrDefault("valid", "true").equals("false")){
+            Helpers.printInfoAndQuit();
+        }
         try{
             run(argMap);
-            System.out.println("DONE");
         }
         catch(Exception e){
             e.printStackTrace();
-        }
-        finally{
-            return;
         }
     }
 
@@ -74,7 +64,8 @@ public class Ping{
             tempWrapper.runProcesses(false);
             threadPoolList.add(tempWrapper);
         }
-        
+
+        Thread.sleep(2000);
         Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
         
         FileWriter fWriter = null;
