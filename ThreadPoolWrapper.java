@@ -36,19 +36,19 @@ public class ThreadPoolWrapper{
         return this.successCode;
     }
 
-    public boolean runProcesses(boolean onlyErrors){
+    public ThreadPoolWrapper runProcesses(boolean onlyErrors){
         if(this.processNode.processList.size() < 0){
-            return false;
+            return this;
         }
-        LinkedList<Process> tempProcessList = this.processNode
-                                                    .mismatchedProcesses(this.successCode);
+        LinkedList<Process> tempProcessList = this.processNode.mismatchedProcesses(this.successCode);
         if(onlyErrors){
             if(tempProcessList.size() > 0)
                 runList(tempProcessList);
-            return true;
         }
-        runList(this.processNode.processList);
-        return true;
+        else{
+            runList(this.processNode.processList);
+        }
+        return this;
     }
     public void runList(LinkedList<Process> processList){
         for(Process process: processList){
