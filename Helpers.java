@@ -91,4 +91,46 @@ public class Helpers {
             threadPoolWrapper.getExecutor().awaitTermination(timeout, TimeUnit.MILLISECONDS);
         }
     }
+
+    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers) throws IOException{
+        
+        FileWriter fWriter = null;
+        BufferedWriter bWriter =  null;
+        PrintWriter pWriter = null;
+        File out = null;
+
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss");    
+        try{
+            for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
+                ProcessNode processNode = threadPoolWrapper.getProcessNode();
+                out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + processNode.serverName + ".txt");
+                fWriter = new FileWriter(out);
+                bWriter = new BufferedWriter(fWriter);
+                pWriter = new PrintWriter(bWriter, true);
+                for(Process process: processNode.processList){
+                    pWriter.println(process.URLNode.URL + ": " + process.URLNode.getFormattedResponse());
+                }
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            if(pWriter!=null){
+                pWriter.flush();
+                pWriter.close();
+            } else {
+                if(bWriter!=null){
+                    bWriter.flush();
+                    bWriter.close();
+                }
+                else{
+                    if(fWriter!=null){
+                        fWriter.flush();
+                        fWriter.close();
+                    }
+                }
+            }
+        }
+    }
 }

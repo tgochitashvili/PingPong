@@ -55,55 +55,19 @@ public class Ping{
         long timeout = (Process.readTimeout + Process.connTimeout)*processNodes.get(0).processList.size();
         LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
         for(ProcessNode processNode:processNodes){
-            ThreadPoolExecutor tempExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads);
-            ThreadPoolWrapper tempWrapper = new ThreadPoolWrapper()
-                                                .setServerName(processNode.serverName)
-                                                .setExecutor(tempExecutor)
-                                                .setProcessNode(processNode);
-
-            tempWrapper.runProcesses(false);
-            threadPoolList.add(tempWrapper);
+            threadPoolList.add(
+                new ThreadPoolWrapper()
+                                    .setServerName(processNode.serverName)
+                                    .setExecutor(
+                                            (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads)
+                                        )
+                                    .setProcessNode(processNode)
+                                    .runProcesses(false)
+                                    );
         }
 
         Thread.sleep(2000);
         Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
-        
-        FileWriter fWriter = null;
-        BufferedWriter bWriter =  null;
-        PrintWriter pWriter = null;
-        File out = null;
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss");    
-        try{
-            for(ProcessNode processNode: processNodes){
-
-                out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + processNode.serverName + ".txt");
-                fWriter = new FileWriter(out);
-                bWriter = new BufferedWriter(fWriter);
-                pWriter = new PrintWriter(bWriter, true);
-                for(Process process: processNode.processList){
-                    pWriter.println(process.URLNode.URL + ": " + process.URLNode.getFormattedResponse());
-                }
-            }
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-        finally{
-            if(pWriter!=null){
-                pWriter.flush();
-                pWriter.close();
-            } else {
-                if(bWriter!=null){
-                    bWriter.flush();
-                    bWriter.close();
-                }
-                else{
-                    if(fWriter!=null){
-                        fWriter.flush();
-                        fWriter.close();
-                    }
-                }
-            }
-        }
+        Helpers.log(threadPoolList);
     }
 }
