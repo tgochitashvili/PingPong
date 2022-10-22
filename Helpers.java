@@ -19,6 +19,13 @@ import java.io.FileWriter;
 
 public class Helpers {
 
+    public enum LoopAction {
+        EXIT,
+        CONTINUE,
+        ONLYERRORS,
+        PROMPT
+    }
+
     public static HashMap<String,String> argsToMap(String[]args){
         HashMap<String,String> argMap = new HashMap<String,String>();
         for(int i = 0; i < args.length; i++){
@@ -65,6 +72,35 @@ public class Helpers {
         System.exit(-1);
     }
 
+    public static LinkedList<ProcessNode> buildNodes(String urlpath, String serverpath, String token){
+        AbstractReader plainReader = new TokenizedPlainReader();
+        LinkedList<ProcessNode> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
+        return processNodes;
+    }
+
+    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessNode> processNodes, int nThreads){
+        
+        LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
+        for(ProcessNode processNode:processNodes){
+            threadPoolList.add(
+                new ThreadPoolWrapper()
+                                    .setServerName(processNode.serverName)
+                                    .setExecutor(
+                                            (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads)
+                                        )
+                                    .setProcessNode(processNode)
+                                    );
+        }
+        return threadPoolList;
+    }
+
+    public static LinkedList<ThreadPoolWrapper> runPools(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors){
+        for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
+            threadPoolWrapper.runProcesses(onlyErrors);
+        }
+        return threadPoolWrappers;
+    }
+
     public static void trackThreadPoolWrapperProgress(LinkedList<ThreadPoolWrapper> poolList, long timeout) throws InterruptedException{
         long start = System.currentTimeMillis();
         boolean allDone;
@@ -82,7 +118,7 @@ public class Helpers {
                 break;
             }
             allDone = true;
-            Thread.sleep(200);
+            Thread.sleep(50);
             CLEARSCREEN();
         }
 
@@ -132,5 +168,21 @@ public class Helpers {
                 }
             }
         }
+    }
+
+    public static LoopAction continueLoop(LinkedList<ThreadPoolWrapper> threadPoolWrappers, String response) throws IOException{
+        LoopAction action = LoopAction.PROMPT;
+        if(response.contains("w"))
+            log(threadPoolWrappers);
+
+        if(response.contains("r"))
+            action = LoopAction.CONTINUE;
+        
+        if(response.contains("e"))
+            action = LoopAction.ONLYERRORS;
+
+        if(response.contains("q"))
+            action = LoopAction.EXIT;
+        return action;
     }
 }
