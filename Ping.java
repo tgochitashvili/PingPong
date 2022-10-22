@@ -3,10 +3,12 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
@@ -26,20 +28,23 @@ public class Ping{
         if(argMap.getOrDefault("valid", "true").equals("false")){
             Helpers.printInfoAndQuit();
         }
+        boolean onlyErrors = false;
         try{
-            run(argMap);
+            
+            run(argMap, onlyErrors);
         }
         catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    public static void run(HashMap<String,String> args) throws IOException, InterruptedException{
+    public static void run(HashMap<String,String> args, boolean onlyErrors) throws IOException, InterruptedException{
+        Scanner scnr = new Scanner(System.in);
         String urlpath = args.get("urlpath");
         String serverpath = args.get("serverpath");
         String token = args.get("token");
         int nThreads = Runtime.getRuntime().availableProcessors()*5;
-        nThreads = Integer.parseInt(args.getOrDefault("threads", "10"));
+        nThreads = Integer.parseInt(args.getOrDefault("threads", "" + nThreads));
 
         System.out.println("Threads: " + nThreads);
 
@@ -49,25 +54,36 @@ public class Ping{
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
 
-        
-        AbstractReader plainReader = new TokenizedPlainReader();
-        LinkedList<ProcessNode> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
+        LinkedList<ProcessNode> processNodes = Helpers.buildNodes(urlpath, serverpath, token);
         long timeout = (Process.readTimeout + Process.connTimeout)*processNodes.get(0).processList.size();
-        LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
-        for(ProcessNode processNode:processNodes){
-            threadPoolList.add(
-                new ThreadPoolWrapper()
-                                    .setServerName(processNode.serverName)
-                                    .setExecutor(
-                                            (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads)
-                                        )
-                                    .setProcessNode(processNode)
-                                    .runProcesses(false)
-                                    );
+        
+        while(true){
+            LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildPools(processNodes, nThreads);
+            Helpers.runPools(threadPoolList, onlyErrors);
+            Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
+            Helpers.LoopAction action = Helpers.LoopAction.PROMPT;
+            while(action == Helpers.LoopAction.PROMPT){
+                System.out.println("(w) Write logs; (q) Quit; (r) Retry; (e) Retry only errors;");
+                String response = "";
+                try{
+                    response =  scnr.next();
+                    action = Helpers.continueLoop(threadPoolList, response);
+                    onlyErrors = (action == Helpers.LoopAction.ONLYERRORS);
+                    switch(action){
+                        case EXIT:
+                            return;
+                        default:
+                            continue;
+                    }
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+            
         }
-
-        Thread.sleep(2000);
-        Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
-        Helpers.log(threadPoolList);
+        // Helpers.log(threadPoolList);
+        
     }
 }
