@@ -62,13 +62,13 @@ public class Helpers {
     public static void printInfoAndQuit(){
         CLEARSCREEN();
         System.out.println("Please enter some arguments:");
-        System.out.println("\t threads=x\t\t - Amount of threads to use for pinging (default: hardware threads * 5");
+        System.out.println("\t threads=x\t\t - Amount of threads to use for pinging (default: hardware threads * 5)");
         System.out.println("\t readtimeout=x\t\t - timeout limit for the response in milliseconds (default: 1000)");
         System.out.println("\t conntimeout=x\t\t - timeout limit for the connection in milliseconds (default: 1000)");
         System.out.println("\t serverpath=x\t\t - path to the file containing the server list, only works with a tokenized url list, requires token");
         System.out.println("\t urlpath=x\t\t - mandatory, path to the file containing either full or tokenized URLs");
-        System.out.println("\t token=x\t\t - mandatory for serverpath, token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
-        
+        System.out.println("\t token=x\t\t - token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
+        System.out.println("\t successcode=x\t\t - success code to check against for errors (default: 200)");
         System.exit(-1);
     }
 
@@ -78,7 +78,7 @@ public class Helpers {
         return processNodes;
     }
 
-    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessNode> processNodes, int nThreads){
+    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessNode> processNodes, int nThreads, String successCode){
         
         LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
         for(ProcessNode processNode:processNodes){
@@ -89,6 +89,7 @@ public class Helpers {
                                             (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads)
                                         )
                                     .setProcessNode(processNode)
+                                    .setSuccessCode(successCode)
                                     );
         }
         return threadPoolList;

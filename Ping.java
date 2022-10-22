@@ -50,6 +50,7 @@ public class Ping{
 
         Process.readTimeout = Integer.parseInt(args.getOrDefault("readTimeout", "1000"));
         Process.connTimeout = Integer.parseInt(args.getOrDefault("connTimeout", "1000"));
+        String successCode = args.getOrDefault("successcode", "200");
 
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
@@ -58,12 +59,12 @@ public class Ping{
         long timeout = (Process.readTimeout + Process.connTimeout)*processNodes.get(0).processList.size();
         
         while(true){
-            LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildPools(processNodes, nThreads);
+            LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildPools(processNodes, nThreads, successCode);
             Helpers.runPools(threadPoolList, onlyErrors);
             Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
             Helpers.LoopAction action = Helpers.LoopAction.PROMPT;
             while(action == Helpers.LoopAction.PROMPT){
-                System.out.println("(w) Write logs; (q) Quit; (r) Retry; (e) Retry only errors;");
+                System.out.println("(w) Write logs; (q) Quit; (r) Retry; (e) Retry errors;");
                 String response = "";
                 try{
                     response =  scnr.next();
