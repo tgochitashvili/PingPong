@@ -18,7 +18,7 @@ public class Ping{
     final static boolean DEBUG = false;
     
     
-    public static void main(String[]args) throws UnknownHostException, IOException{
+    public static void main(String[]args){
         if(args.length == 0){
             
             System.out.println("Please enter some arguments:");
@@ -32,19 +32,24 @@ public class Ping{
             System.exit(-1);
         }
         HashMap<String,String> argMap = Helpers.argsToMap(args);
-
-        run(argMap);
+        try{
+            run(argMap);
+            System.out.println("DONE");
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            return;
+        }
     }
 
-    public static void run(HashMap<String,String> args){
-        TokenizedPlainReader plainReader = new TokenizedPlainReader();
+    public static void run(HashMap<String,String> args) throws IOException, InterruptedException{
         String urlpath = args.get("urlpath");
         String serverpath = args.get("serverpath");
         String token = args.get("token");
-        LinkedList<ProcessNode> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
-        // System.exit(-1);
         int nThreads = Runtime.getRuntime().availableProcessors()*5;
-        nThreads = Integer.parseInt(args.get("threads"));
+        nThreads = Integer.parseInt(args.getOrDefault("threads", "10"));
 
         System.out.println("Threads: " + nThreads);
 
@@ -54,40 +59,23 @@ public class Ping{
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
 
-
+        
+        AbstractReader plainReader = new TokenizedPlainReader();
+        LinkedList<ProcessNode> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
         long timeout = (Process.readTimeout + Process.connTimeout)*processNodes.get(0).processList.size();
-        LinkedList<ThreadPoolExecutor> threadPoolList = new LinkedList<ThreadPoolExecutor>();
+        LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
         for(ProcessNode processNode:processNodes){
-            threadPoolList.add((ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads));
-            for(Process process: processNode.processList){
-                threadPoolList.getLast().submit(process);
-            }
+            ThreadPoolExecutor tempExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads);
+            ThreadPoolWrapper tempWrapper = new ThreadPoolWrapper()
+                                                .setServerName(processNode.serverName)
+                                                .setExecutor(tempExecutor)
+                                                .setProcessNode(processNode);
+
+            tempWrapper.runProcesses(false);
+            threadPoolList.add(tempWrapper);
         }
-        for(ThreadPoolExecutor threadPool: threadPoolList){
-            long currentTasks = threadPool.getCompletedTaskCount();
-            long numTasks = threadPool.getTaskCount();
-            try{
-                threadPool.shutdown();
-                System.out.println();
-                long start = System.currentTimeMillis();
-                String[] symbArray = {"/","-","\\","|"};
-                LinkedList<String> symbols = new LinkedList<String>(Arrays.asList(symbArray));
-                for(;
-                    currentTasks < numTasks && System.currentTimeMillis()-start<timeout;
-                    currentTasks = threadPool.getCompletedTaskCount()
-                    ){
-                    System.out.printf(Helpers.CLEARLINE() + "Tasks finished: " + currentTasks + "/" + numTasks + "  " + symbols.getFirst(), "");
-                    symbols.add(symbols.removeFirst());
-                    Thread.sleep(100);
-                }
-                System.out.printf(Helpers.CLEARLINE() + "Tasks finished: " + currentTasks + "/" + numTasks, "");
-                threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                System.out.println("\nDONE!");
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-        }
+        
+        Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
         
         FileWriter fWriter = null;
         BufferedWriter bWriter =  null;
@@ -113,6 +101,17 @@ public class Ping{
             if(pWriter!=null){
                 pWriter.flush();
                 pWriter.close();
+            } else {
+                if(bWriter!=null){
+                    bWriter.flush();
+                    bWriter.close();
+                }
+                else{
+                    if(fWriter!=null){
+                        fWriter.flush();
+                        fWriter.close();
+                    }
+                }
             }
         }
     }
