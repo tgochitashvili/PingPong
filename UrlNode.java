@@ -20,4 +20,7 @@ public class UrlNode {
     public String getFormattedResponse(){
         return this.responseCode + " - " + this.response;
     }
+    public boolean checkResponse(String responseCode){
+        return this.responseCode.equals(responseCode);
+    }
 }
