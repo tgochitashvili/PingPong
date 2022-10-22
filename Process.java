@@ -14,9 +14,10 @@ public class Process implements Runnable {
     }
     private static final String USER_AGENT = "Mozilla/5.0";
     public void run(){
+        HttpURLConnection con = null;
         try{
             URL url = new URL(URLNode.URL);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con = (HttpURLConnection) url.openConnection();
 
             con.setRequestMethod("GET");
             con.setRequestProperty("User-Agent", USER_AGENT);
@@ -26,18 +27,21 @@ public class Process implements Runnable {
 
             URLNode.response = con.getResponseMessage();
             URLNode.responseCode = "" + con.getResponseCode();
-            
-            con.disconnect();
         }
         catch(Exception e){
             URLNode.response = e.getMessage();
             URLNode.responseCode = "-1";
         }
         finally{
+            if(con != null)
+                con.disconnect();
             synchronized(responseList) {
                 responseList.add(URLNode);
             }
         }
         return;
+    }
+    public boolean checkResponse(String responseCode){
+        return this.URLNode.checkResponse(responseCode);
     }
 }
