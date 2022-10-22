@@ -1,5 +1,4 @@
 import java.util.LinkedList;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ThreadPoolWrapper{
@@ -7,11 +6,7 @@ public class ThreadPoolWrapper{
     private ThreadPoolExecutor threadPoolExecutor;
     private ProcessNode processNode;
     private String successCode = "200";
-    private LinkedList<Future<?>> futures;
 
-    public ThreadPoolWrapper(){
-        this.resetFutures();
-    }
     public ThreadPoolWrapper setServerName(String serverName){
         this.serverName = serverName;
         return this;
@@ -40,13 +35,6 @@ public class ThreadPoolWrapper{
     public String getSuccessCode(){
         return this.successCode;
     }
-    public ThreadPoolWrapper resetFutures(){
-        futures = new LinkedList<Future<?>>();
-        return this;
-    }
-    public LinkedList<Future<?>> getFutures(){
-        return this.futures;
-    }
 
     public boolean runProcesses(boolean onlyErrors){
         if(this.processNode.processList.size() < 0){
@@ -64,7 +52,7 @@ public class ThreadPoolWrapper{
     }
     public void runList(LinkedList<Process> processList){
         for(Process process: processList){
-            futures.add(this.threadPoolExecutor.submit(process));
+            this.threadPoolExecutor.submit(process);
         }
     }
 }
