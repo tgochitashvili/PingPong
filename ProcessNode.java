@@ -24,4 +24,14 @@ public class ProcessNode{
     public boolean writeToJSON(File logFolder){
         return false;
     }
+
+    public LinkedList<Process> mismatchedProcesses(String responseCode){
+        LinkedList<Process> tempProcessList = new LinkedList<Process>();
+        for(Process process: this.processList){
+            if(!process.checkResponse(responseCode)){
+                tempProcessList.add(process);
+            }
+        }
+        return tempProcessList;
+    }
 }
