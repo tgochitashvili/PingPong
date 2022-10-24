@@ -1,26 +1,58 @@
+import java.util.LinkedList;
+
 public class UrlNode {
-    public String URL;
-    public String response;
-    public String responseCode;
-    public UrlNode(String URL, String response, String responseCode){
-        this.URL = URL;
-        this.response = response;
-        this.responseCode = responseCode;
+    private String URL;
+    private LinkedList<RequestNode> requestNodeList;
+
+
+    public RequestNode getLastRequestNode(){
+        try{
+            return this.requestNodeList.getLast();
+        }
+        catch(Exception e){
+            return new RequestNode();
+        }
     }
-    public UrlNode(String URL, String response){
+
+    public UrlNode addRequestNode(RequestNode requestNode){
+        this.requestNodeList.add(requestNode);
+        return this;
+    }
+
+    public UrlNode setRequestNodeList(LinkedList<RequestNode> requestNodeList){
+        this.requestNodeList = requestNodeList;
+        return this;
+    }
+
+    public UrlNode resetRequestNodeList(){
+        this.setRequestNodeList(new LinkedList<RequestNode>());
+        return this;
+    }
+   
+    public String getURL() {
+        return this.URL;
+    }
+    public UrlNode setURL(String URL) {
         this.URL = URL;
-        this.response = response;
-        this.responseCode = "";
+        return this;
+    }
+
+    public UrlNode(String URL, LinkedList<RequestNode> requestNodeList){
+        this.URL = URL;
+        this.setRequestNodeList(requestNodeList);
+    }
+    public UrlNode(String URL, RequestNode requestNode){
+        this.URL = URL;
+        this.resetRequestNodeList().addRequestNode(requestNode);
     }
     public UrlNode(String URL){
         this.URL = URL;
-        this.response = "";
-        this.responseCode = "";
+        this.resetRequestNodeList();
     }
-    public String getFormattedResponse(){
-        return this.responseCode + " - " + this.response;
+    public String getLastFormattedResponse(){
+        return this.getLastRequestNode().getResponseCode() + " - " + this.getLastRequestNode().getResponse();
     }
-    public boolean checkResponse(String responseCode){
-        return this.responseCode.equals(responseCode);
+    public boolean checkLastResponse(String responseCode){
+        return this.getLastRequestNode().getResponseCode().equals(responseCode);
     }
 }
