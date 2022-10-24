@@ -71,23 +71,23 @@ public class Helpers {
         System.exit(-1);
     }
 
-    public static LinkedList<ProcessesWrapper> buildNodes(String urlpath, String serverpath, String token){
+    public static LinkedList<ProcessPool> buildNodes(String urlpath, String serverpath, String token){
         AbstractReader plainReader = new TokenizedPlainReader();
-        LinkedList<ProcessesWrapper> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
-        return processNodes;
+        LinkedList<ProcessPool> processPools = plainReader.getProcessPoolsFromSource(urlpath, serverpath, token);
+        return processPools;
     }
 
-    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessesWrapper> processNodes, int nThreads, String successCode){
+    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessPool> processPools, int nThreads, String successCode){
         
         LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
-        for(ProcessesWrapper processNode:processNodes){
+        for(ProcessPool processPool:processPools){
             threadPoolList.add(
                 new ThreadPoolWrapper()
-                                    .setServerName(processNode.serverName)
+                                    .setServerName(processPool.serverName)
                                     .setExecutor(
                                             (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads)
                                         )
-                                    .setProcessNode(processNode)
+                                    .setProcessPool(processPool)
                                     .setSuccessCode(successCode)
                                     );
         }
@@ -151,16 +151,16 @@ public class Helpers {
         SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss");    
         try{
             for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
-                ProcessesWrapper processNode = threadPoolWrapper.getProcessNode();
+                ProcessPool processPool = threadPoolWrapper.getProcessPool();
                 LinkedList<Process> processList = onlyErrors?
-                                processNode.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
-                                :processNode.processList;
+                                processPool.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
+                                :processPool.processList;
                 out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + threadPoolWrapper.getServerName() + ".txt");
                 fWriter = new FileWriter(out);
                 bWriter = new BufferedWriter(fWriter);
                 pWriter = new PrintWriter(bWriter, true);
                 for(Process process: processList){
-                    pWriter.println(process.URLNode.URL + ": " + process.URLNode.getFormattedResponse());
+                    pWriter.println(process.URLNode.getURL() + ": " + process.URLNode.getLastFormattedResponse());
                 }
             }
         }
