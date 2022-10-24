@@ -5,9 +5,9 @@ import java.util.Scanner;
 
 public class TokenizedPlainReader implements AbstractReader{
 
-    public LinkedList<ProcessesWrapper> getProcessNodesFromSource(String urlPath, String serverPath, String token){
-        LinkedList<ProcessesWrapper> processList = new LinkedList<ProcessesWrapper>();
-        ProcessesWrapper processNode = null;
+    public LinkedList<ProcessPool> getProcessPoolsFromSource(String urlPath, String serverPath, String token){
+        LinkedList<ProcessPool> processList = new LinkedList<ProcessPool>();
+        ProcessPool processPool = null;
         Scanner urlScnr = null;
         Scanner serverScnr = null;
         try{
@@ -25,12 +25,12 @@ public class TokenizedPlainReader implements AbstractReader{
                 urls.add(urlScnr.nextLine());
             }
             for(String server: servers){
-                processNode = new ProcessesWrapper(server);
+                processPool = new ProcessPool(server);
                 for(String url: urls){
                     String tempUrl = url.replaceAll(token,server);
-                    processNode.processList.add(new Process(tempUrl));
+                    processPool.processList.add(new Process(tempUrl));
                 }
-                processList.add(processNode);
+                processList.add(processPool);
             }
         }
         catch (Exception e){
@@ -47,9 +47,9 @@ public class TokenizedPlainReader implements AbstractReader{
         return processList;
     }
 
-    public LinkedList<ProcessesWrapper> getProcessNodesFromSource(String urlPath){
-        LinkedList<ProcessesWrapper> processList = null;
-        ProcessesWrapper processNode = null;
+    public LinkedList<ProcessPool> getProcessPoolsFromSource(String urlPath){
+        LinkedList<ProcessPool> processList = null;
+        ProcessPool processPool = null;
         Scanner scnr = null;
         try{
             File urlFile = new File(urlPath);
@@ -58,12 +58,12 @@ public class TokenizedPlainReader implements AbstractReader{
             while(scnr.hasNextLine()){
                 urls.add(scnr.nextLine());
             }
-            processNode = new ProcessesWrapper();
+            processPool = new ProcessPool();
             for(String url: urls){
-                processNode.processList.add(new Process(url));
+                processPool.processList.add(new Process(url));
             }
-            processList = new LinkedList<ProcessesWrapper>();
-            processList.add(processNode);
+            processList = new LinkedList<ProcessPool>();
+            processList.add(processPool);
         }
         catch (Exception e){
             e.printStackTrace();
