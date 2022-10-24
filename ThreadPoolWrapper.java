@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class ThreadPoolWrapper{
     private String serverName;
     private ThreadPoolExecutor threadPoolExecutor;
-    private ProcessesWrapper processNode;
+    private ProcessPool processPool;
     private String successCode = "200";
 
     public ThreadPoolWrapper setServerName(String serverName){
@@ -21,12 +21,12 @@ public class ThreadPoolWrapper{
     public ThreadPoolExecutor getExecutor(){
         return this.threadPoolExecutor;
     }
-    public ThreadPoolWrapper setProcessNode(ProcessesWrapper processNode){
-        this.processNode = processNode;
+    public ThreadPoolWrapper setProcessPool(ProcessPool processPool){
+        this.processPool = processPool;
         return this;
     }
-    public ProcessesWrapper getProcessNode(){
-        return this.processNode;
+    public ProcessPool getProcessPool(){
+        return this.processPool;
     }
     public ThreadPoolWrapper setSuccessCode(String successCode){
         this.successCode = successCode;
@@ -37,16 +37,16 @@ public class ThreadPoolWrapper{
     }
 
     public ThreadPoolWrapper runProcesses(boolean onlyErrors){
-        if(this.processNode.processList.size() < 0){
+        if(this.processPool.processList.size() < 0){
             return this;
         }
-        LinkedList<Process> tempProcessList = this.processNode.mismatchedProcesses(this.successCode);
+        LinkedList<Process> tempProcessList = this.processPool.mismatchedProcesses(this.successCode);
         if(onlyErrors){
             if(tempProcessList.size() > 0)
                 runList(tempProcessList);
         }
         else{
-            runList(this.processNode.processList);
+            runList(this.processPool.processList);
         }
         return this;
     }
