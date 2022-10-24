@@ -1,15 +1,9 @@
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.HashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,6 +18,11 @@ public class Helpers {
         CONTINUE,
         ONLYERRORS,
         PROMPT
+    }
+
+    public enum LogType{
+        JSON,
+        TXT
     }
 
     public static HashMap<String,String> argsToMap(String[]args){
@@ -106,6 +105,7 @@ public class Helpers {
         long start = System.currentTimeMillis();
         boolean allDone;
         while((System.currentTimeMillis()-start) < timeout){
+            CLEARSCREEN();
             allDone = true;
             for(ThreadPoolWrapper threadPoolWrapper: poolList){
                 long numTasks = threadPoolWrapper.getExecutor().getTaskCount();
@@ -120,7 +120,6 @@ public class Helpers {
             }
             allDone = true;
             Thread.sleep(50);
-            CLEARSCREEN();
         }
 
         for(ThreadPoolWrapper threadPoolWrapper: poolList){
@@ -129,7 +128,20 @@ public class Helpers {
         }
     }
 
-    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers) throws IOException{
+    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors, LogType logType) throws IOException{
+        switch(logType){
+            case JSON:
+                logJSON(threadPoolWrappers, onlyErrors);
+            default:
+                logTxt(threadPoolWrappers, onlyErrors);
+        }
+    }
+
+    public static void logJSON(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
+    
+    }
+
+    public static void logTxt(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
         
         FileWriter fWriter = null;
         BufferedWriter bWriter =  null;
@@ -140,11 +152,14 @@ public class Helpers {
         try{
             for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
                 ProcessNode processNode = threadPoolWrapper.getProcessNode();
-                out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + processNode.serverName + ".txt");
+                LinkedList<Process> processList = onlyErrors?
+                                processNode.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
+                                :processNode.processList;
+                out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + threadPoolWrapper.getServerName() + ".txt");
                 fWriter = new FileWriter(out);
                 bWriter = new BufferedWriter(fWriter);
                 pWriter = new PrintWriter(bWriter, true);
-                for(Process process: processNode.processList){
+                for(Process process: processList){
                     pWriter.println(process.URLNode.URL + ": " + process.URLNode.getFormattedResponse());
                 }
             }
@@ -173,13 +188,14 @@ public class Helpers {
 
     public static LoopAction continueLoop(LinkedList<ThreadPoolWrapper> threadPoolWrappers, String response) throws IOException{
         LoopAction action = LoopAction.PROMPT;
+        boolean onlyErrors = response.contains("e");
         if(response.contains("w"))
-            log(threadPoolWrappers);
+            log(threadPoolWrappers, onlyErrors, LogType.TXT);
 
         if(response.contains("r"))
             action = LoopAction.CONTINUE;
         
-        if(response.contains("e"))
+        if(onlyErrors)
             action = LoopAction.ONLYERRORS;
 
         if(response.contains("q"))
