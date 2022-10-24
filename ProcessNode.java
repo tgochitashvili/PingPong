@@ -1,6 +1,5 @@
 import java.io.File;
 import java.util.LinkedList;
-import org.json.JSONObject;
 public class ProcessNode{
     public LinkedList<Process> processList;
     public String serverName;
@@ -19,10 +18,6 @@ public class ProcessNode{
     public ProcessNode(){
         this.processList = new LinkedList<Process>();
         this.serverName = "";
-    }
-    
-    public boolean writeToJSON(File logFolder){
-        return false;
     }
 
     public LinkedList<Process> mismatchedProcesses(String responseCode){
