@@ -1,21 +1,20 @@
-import java.io.File;
 import java.util.LinkedList;
-public class ProcessNode{
+public class ProcessesWrapper{
     public LinkedList<Process> processList;
     public String serverName;
-    public ProcessNode(LinkedList<Process> processList, String serverName){
+    public ProcessesWrapper(LinkedList<Process> processList, String serverName){
         this.processList = new LinkedList<Process>(processList);
         this.serverName = serverName;
     }
-    public ProcessNode(LinkedList<Process> processList){
+    public ProcessesWrapper(LinkedList<Process> processList){
         this.processList = new LinkedList<Process>(processList);
         this.serverName = "";
     }
-    public ProcessNode(String serverName){
+    public ProcessesWrapper(String serverName){
         this.processList = new LinkedList<Process>();
         this.serverName = serverName;
     }
-    public ProcessNode(){
+    public ProcessesWrapper(){
         this.processList = new LinkedList<Process>();
         this.serverName = "";
     }

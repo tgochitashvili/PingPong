@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class ThreadPoolWrapper{
     private String serverName;
     private ThreadPoolExecutor threadPoolExecutor;
-    private ProcessNode processNode;
+    private ProcessesWrapper processNode;
     private String successCode = "200";
 
     public ThreadPoolWrapper setServerName(String serverName){
@@ -21,11 +21,11 @@ public class ThreadPoolWrapper{
     public ThreadPoolExecutor getExecutor(){
         return this.threadPoolExecutor;
     }
-    public ThreadPoolWrapper setProcessNode(ProcessNode processNode){
+    public ThreadPoolWrapper setProcessNode(ProcessesWrapper processNode){
         this.processNode = processNode;
         return this;
     }
-    public ProcessNode getProcessNode(){
+    public ProcessesWrapper getProcessNode(){
         return this.processNode;
     }
     public ThreadPoolWrapper setSuccessCode(String successCode){

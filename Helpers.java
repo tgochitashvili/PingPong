@@ -71,16 +71,16 @@ public class Helpers {
         System.exit(-1);
     }
 
-    public static LinkedList<ProcessNode> buildNodes(String urlpath, String serverpath, String token){
+    public static LinkedList<ProcessesWrapper> buildNodes(String urlpath, String serverpath, String token){
         AbstractReader plainReader = new TokenizedPlainReader();
-        LinkedList<ProcessNode> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
+        LinkedList<ProcessesWrapper> processNodes = plainReader.getProcessNodesFromSource(urlpath, serverpath, token);
         return processNodes;
     }
 
-    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessNode> processNodes, int nThreads, String successCode){
+    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessesWrapper> processNodes, int nThreads, String successCode){
         
         LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
-        for(ProcessNode processNode:processNodes){
+        for(ProcessesWrapper processNode:processNodes){
             threadPoolList.add(
                 new ThreadPoolWrapper()
                                     .setServerName(processNode.serverName)
@@ -151,7 +151,7 @@ public class Helpers {
         SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss");    
         try{
             for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
-                ProcessNode processNode = threadPoolWrapper.getProcessNode();
+                ProcessesWrapper processNode = threadPoolWrapper.getProcessNode();
                 LinkedList<Process> processList = onlyErrors?
                                 processNode.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
                                 :processNode.processList;

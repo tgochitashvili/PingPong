@@ -5,9 +5,9 @@ import java.util.Scanner;
 
 public class TokenizedPlainReader implements AbstractReader{
 
-    public LinkedList<ProcessNode> getProcessNodesFromSource(String urlPath, String serverPath, String token){
-        LinkedList<ProcessNode> processList = new LinkedList<ProcessNode>();
-        ProcessNode processNode = null;
+    public LinkedList<ProcessesWrapper> getProcessNodesFromSource(String urlPath, String serverPath, String token){
+        LinkedList<ProcessesWrapper> processList = new LinkedList<ProcessesWrapper>();
+        ProcessesWrapper processNode = null;
         Scanner urlScnr = null;
         Scanner serverScnr = null;
         try{
@@ -25,7 +25,7 @@ public class TokenizedPlainReader implements AbstractReader{
                 urls.add(urlScnr.nextLine());
             }
             for(String server: servers){
-                processNode = new ProcessNode(server);
+                processNode = new ProcessesWrapper(server);
                 for(String url: urls){
                     String tempUrl = url.replaceAll(token,server);
                     processNode.processList.add(new Process(tempUrl));
@@ -47,9 +47,9 @@ public class TokenizedPlainReader implements AbstractReader{
         return processList;
     }
 
-    public LinkedList<ProcessNode> getProcessNodesFromSource(String urlPath){
-        LinkedList<ProcessNode> processList = null;
-        ProcessNode processNode = null;
+    public LinkedList<ProcessesWrapper> getProcessNodesFromSource(String urlPath){
+        LinkedList<ProcessesWrapper> processList = null;
+        ProcessesWrapper processNode = null;
         Scanner scnr = null;
         try{
             File urlFile = new File(urlPath);
@@ -58,11 +58,11 @@ public class TokenizedPlainReader implements AbstractReader{
             while(scnr.hasNextLine()){
                 urls.add(scnr.nextLine());
             }
-            processNode = new ProcessNode();
+            processNode = new ProcessesWrapper();
             for(String url: urls){
                 processNode.processList.add(new Process(url));
             }
-            processList = new LinkedList<ProcessNode>();
+            processList = new LinkedList<ProcessesWrapper>();
             processList.add(processNode);
         }
         catch (Exception e){
