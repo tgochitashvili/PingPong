@@ -53,6 +53,8 @@ public class UrlNode {
         return this.getLastRequestNode().getResponseCode() + " - " + this.getLastRequestNode().getResponse();
     }
     public boolean checkLastResponse(String responseCode){
-        return this.getLastRequestNode().getResponseCode().equals(responseCode);
+        String tempResponseCode = this.getLastRequestNode().getResponseCode();
+
+        return tempResponseCode.equals(responseCode) || tempResponseCode.equals("");
     }
 }

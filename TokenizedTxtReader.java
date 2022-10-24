@@ -3,7 +3,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 
-public class TokenizedPlainReader implements AbstractReader{
+public class TokenizedTxtReader implements AbstractReader{
 
     public LinkedList<ProcessPool> getProcessPoolsFromSource(String urlPath, String serverPath, String token){
         LinkedList<ProcessPool> processList = new LinkedList<ProcessPool>();
@@ -27,8 +27,10 @@ public class TokenizedPlainReader implements AbstractReader{
             for(String server: servers){
                 processPool = new ProcessPool(server);
                 for(String url: urls){
-                    String tempUrl = url.replaceAll(token,server);
-                    processPool.processList.add(new Process(tempUrl));
+                    if(!url.equals("")){
+                        String tempUrl = url.replaceAll(token,server);
+                        processPool.processList.add(new Process(tempUrl));
+                    }
                 }
                 processList.add(processPool);
             }
@@ -60,7 +62,8 @@ public class TokenizedPlainReader implements AbstractReader{
             }
             processPool = new ProcessPool();
             for(String url: urls){
-                processPool.processList.add(new Process(url));
+                if(!url.equals(""))
+                    processPool.processList.add(new Process(url));
             }
             processList = new LinkedList<ProcessPool>();
             processList.add(processPool);

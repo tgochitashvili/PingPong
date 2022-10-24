@@ -7,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -72,8 +74,10 @@ public class Helpers {
     }
 
     public static LinkedList<ProcessPool> buildNodes(String urlpath, String serverpath, String token){
-        AbstractReader plainReader = new TokenizedPlainReader();
-        LinkedList<ProcessPool> processPools = plainReader.getProcessPoolsFromSource(urlpath, serverpath, token);
+        AbstractReader plainReader = new TokenizedTxtReader();
+        LinkedList<ProcessPool> processPools = !serverpath.equals("") && !token.equals("") ?
+                                                plainReader.getProcessPoolsFromSource(urlpath, serverpath, token)
+                                                :plainReader.getProcessPoolsFromSource(urlpath);
         return processPools;
     }
 
@@ -101,7 +105,7 @@ public class Helpers {
         return threadPoolWrappers;
     }
 
-    public static void trackThreadPoolWrapperProgress(LinkedList<ThreadPoolWrapper> poolList, long timeout) throws InterruptedException{
+    public static void trackThreadPoolWrapperProgress(LinkedList<ThreadPoolWrapper> poolList, long timeout, String successCode) throws InterruptedException{
         long start = System.currentTimeMillis();
         boolean allDone;
         while((System.currentTimeMillis()-start) < timeout){
@@ -112,14 +116,17 @@ public class Helpers {
                 long progress = threadPoolWrapper.getExecutor().getCompletedTaskCount();
                 boolean currentDone = (progress >= numTasks);
                 allDone &= currentDone;
-                String toPrint = "[" + threadPoolWrapper.getServerName() + "]\t\t Progress : " + progress + "/" + numTasks;
+                int numErrors = (threadPoolWrapper.getProcessPool().mismatchedProcesses(successCode)).size();
+                String toPrint = "[" + threadPoolWrapper.getServerName() + "]\t\t Progress : " + progress + "/" + numTasks + ";";
+                if(numErrors > 0)
+                    toPrint += " Errors: " + numErrors;
                 System.out.println(toPrint);
             }
             if(allDone){
                 break;
             }
             allDone = true;
-            Thread.sleep(50);
+            Thread.sleep(200);
         }
 
         for(ThreadPoolWrapper threadPoolWrapper: poolList){
@@ -155,6 +162,7 @@ public class Helpers {
                 LinkedList<Process> processList = onlyErrors?
                                 processPool.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
                                 :processPool.processList;
+                Files.createDirectories(Paths.get("./Logs/"));
                 out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + threadPoolWrapper.getServerName() + ".txt");
                 fWriter = new FileWriter(out);
                 bWriter = new BufferedWriter(fWriter);
@@ -189,6 +197,7 @@ public class Helpers {
     public static LoopAction continueLoop(LinkedList<ThreadPoolWrapper> threadPoolWrappers, String response) throws IOException{
         LoopAction action = LoopAction.PROMPT;
         boolean onlyErrors = response.contains("e");
+
         if(response.contains("w"))
             log(threadPoolWrappers, onlyErrors, LogType.TXT);
 

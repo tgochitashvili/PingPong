@@ -30,8 +30,8 @@ public class Ping{
     public static void run(HashMap<String,String> args, boolean onlyErrors, Scanner scnr) throws IOException, InterruptedException{
         
         String urlpath = args.get("urlpath");
-        String serverpath = args.get("serverpath");
-        String token = args.get("token");
+        String serverpath = args.getOrDefault("serverpath","");
+        String token = args.getOrDefault("token","");
         int nThreads = Runtime.getRuntime().availableProcessors()*5;
         nThreads = Integer.parseInt(args.getOrDefault("threads", "" + nThreads));
 
@@ -50,7 +50,7 @@ public class Ping{
         while(true){
             LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildPools(processPools, nThreads, successCode);
             Helpers.runPools(threadPoolList, onlyErrors);
-            Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout);
+            Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout, successCode);
             Helpers.LoopAction action = Helpers.LoopAction.PROMPT;
             while(action == Helpers.LoopAction.PROMPT){
                 System.out.println("(w) Write logs; (q) Quit; (r) Retry; (e) Retry errors;");

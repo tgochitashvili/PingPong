@@ -35,7 +35,6 @@ public class ThreadPoolWrapper{
     public String getSuccessCode(){
         return this.successCode;
     }
-
     public ThreadPoolWrapper runProcesses(boolean onlyErrors){
         if(this.processPool.processList.size() < 0){
             return this;
