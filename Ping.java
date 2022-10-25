@@ -44,11 +44,11 @@ public class Ping{
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
 
-        LinkedList<ProcessPool> processPools = Helpers.buildNodes(urlpath, serverpath, token);
+        LinkedList<ProcessPool> processPools = Helpers.buildProcessPools(urlpath, serverpath, token);
         long timeout = (Process.readTimeout + Process.connTimeout)*processPools.get(0).processList.size();
         Thread.sleep(1000);
         while(true){
-            LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildPools(processPools, nThreads, successCode);
+            LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildThreadPools(processPools, nThreads, successCode);
             Helpers.runPools(threadPoolList, onlyErrors);
             Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout, successCode);
             Helpers.LoopAction action = Helpers.LoopAction.PROMPT;

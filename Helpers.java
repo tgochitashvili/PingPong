@@ -8,10 +8,13 @@ import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class Helpers {
 
@@ -73,7 +76,7 @@ public class Helpers {
         System.exit(-1);
     }
 
-    public static LinkedList<ProcessPool> buildNodes(String urlpath, String serverpath, String token){
+    public static LinkedList<ProcessPool> buildProcessPools(String urlpath, String serverpath, String token){
         AbstractReader plainReader = new TokenizedTxtReader();
         LinkedList<ProcessPool> processPools = !serverpath.equals("") && !token.equals("") ?
                                                 plainReader.getProcessPoolsFromSource(urlpath, serverpath, token)
@@ -81,7 +84,7 @@ public class Helpers {
         return processPools;
     }
 
-    public static LinkedList<ThreadPoolWrapper> buildPools(LinkedList<ProcessPool> processPools, int nThreads, String successCode){
+    public static LinkedList<ThreadPoolWrapper> buildThreadPools(LinkedList<ProcessPool> processPools, int nThreads, String successCode){
         
         LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
         for(ProcessPool processPool:processPools){
@@ -139,13 +142,47 @@ public class Helpers {
         switch(logType){
             case JSON:
                 logJSON(threadPoolWrappers, onlyErrors);
+                break;
             default:
                 logTxt(threadPoolWrappers, onlyErrors);
         }
     }
 
     public static void logJSON(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
-    
+        
+        FileWriter fWriter = null;
+        BufferedWriter bWriter =  null;
+        File out = null;
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss"); 
+        String logDate = sDateFormat.format(new Date(System.currentTimeMillis()));
+        try{
+            Path path = Files.createDirectories(Paths.get("./Logs/" + logDate + "/"));             
+            for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
+                String currTime = "" + System.currentTimeMillis();
+                out = new File(path + "/" + threadPoolWrapper.getServerName() + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json"));
+                fWriter = new FileWriter(out);
+                bWriter = new BufferedWriter(fWriter);
+                String log = threadPoolWrapper.toJSON().toString();
+                bWriter.write(log);
+                bWriter.flush();
+            }
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+        finally{
+            if(bWriter!=null){
+                bWriter.flush();
+                bWriter.close();
+            }
+            else{
+                if(fWriter!=null){
+                    fWriter.flush();
+                    fWriter.close();
+                }
+            }
+        }
+        
     }
 
     public static void logTxt(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
@@ -199,7 +236,7 @@ public class Helpers {
         boolean onlyErrors = response.contains("e");
 
         if(response.contains("w"))
-            log(threadPoolWrappers, onlyErrors, LogType.TXT);
+            log(threadPoolWrappers, onlyErrors, LogType.JSON);
 
         if(response.contains("r"))
             action = LoopAction.CONTINUE;

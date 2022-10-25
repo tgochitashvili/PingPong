@@ -1,3 +1,5 @@
+import org.json.JSONObject;
+
 public class RequestNode {
     private String response;
     private String responseCode;
@@ -45,6 +47,13 @@ public class RequestNode {
     public RequestNode setResponseCode(String responseCode) {
         this.responseCode = responseCode;
         return this;
+    }
+    public JSONObject toJSON(){
+        JSONObject root = new JSONObject().put("responseCode", responseCode)
+                                            .put("response", response)
+                                            .put("requestTime", requestTime)
+                                            .put("responseTime", responseTime);
+        return root;
     }
 
     public RequestNode(String response, String responseCode){

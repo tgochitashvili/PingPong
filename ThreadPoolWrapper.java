@@ -1,6 +1,8 @@
 import java.util.LinkedList;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.json.JSONObject;
+
 public class ThreadPoolWrapper{
     private String serverName;
     private ThreadPoolExecutor threadPoolExecutor;
@@ -54,4 +56,10 @@ public class ThreadPoolWrapper{
             this.threadPoolExecutor.submit(process);
         }
     }
+    public JSONObject toJSON(){
+        JSONObject root = new JSONObject();
+        root.put("errors", processPool.mismatchedProcesses(successCode).size());
+        root.put("processPool", processPool.toJSON()); 
+        return root;
+    }   
 }

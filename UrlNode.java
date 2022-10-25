@@ -1,5 +1,6 @@
 import java.util.LinkedList;
-
+import org.json.JSONObject;
+import org.json.JSONArray;
 public class UrlNode {
     private String URL;
     private LinkedList<RequestNode> requestNodeList;
@@ -32,9 +33,30 @@ public class UrlNode {
     public String getURL() {
         return this.URL;
     }
+
     public UrlNode setURL(String URL) {
         this.URL = URL;
         return this;
+    }
+
+    public String getLastFormattedResponse(){
+        return this.getLastRequestNode().getResponseCode() + " - " + this.getLastRequestNode().getResponse();
+    }
+
+    public boolean checkLastResponse(String responseCode){
+        String tempResponseCode = this.getLastRequestNode().getResponseCode();
+        return tempResponseCode.equals(responseCode) || tempResponseCode.equals("");
+    }
+
+    public JSONObject toJSON(){
+        JSONObject root = new JSONObject();
+        JSONArray array = new JSONArray();
+        for(RequestNode requestNode: requestNodeList){
+            array.put(requestNode.toJSON());
+        }
+        root.put("URL",URL);
+        root.put("requests", array);
+        return root;
     }
 
     public UrlNode(String URL, LinkedList<RequestNode> requestNodeList){
@@ -48,13 +70,5 @@ public class UrlNode {
     public UrlNode(String URL){
         this.URL = URL;
         this.resetRequestNodeList();
-    }
-    public String getLastFormattedResponse(){
-        return this.getLastRequestNode().getResponseCode() + " - " + this.getLastRequestNode().getResponse();
-    }
-    public boolean checkLastResponse(String responseCode){
-        String tempResponseCode = this.getLastRequestNode().getResponseCode();
-
-        return tempResponseCode.equals(responseCode) || tempResponseCode.equals("");
     }
 }

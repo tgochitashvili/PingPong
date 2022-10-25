@@ -1,5 +1,6 @@
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.json.JSONObject;
 
 public class Process implements Runnable {
     public static int connTimeout = 1000;
@@ -36,5 +37,8 @@ public class Process implements Runnable {
     }
     public boolean checkResponse(String responseCode){
         return this.URLNode.checkLastResponse(responseCode);
+    }
+    public JSONObject toJSON(){
+        return URLNode.toJSON();
     }
 }
