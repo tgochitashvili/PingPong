@@ -13,8 +13,6 @@ import java.nio.file.Paths;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 public class Helpers {
 
@@ -153,7 +151,7 @@ public class Helpers {
         FileWriter fWriter = null;
         BufferedWriter bWriter =  null;
         File out = null;
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss"); 
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss"); 
         String logDate = sDateFormat.format(new Date(System.currentTimeMillis()));
         try{
             Path path = Files.createDirectories(Paths.get("./Logs/" + logDate + "/"));             
@@ -162,7 +160,7 @@ public class Helpers {
                 out = new File(path + "/" + threadPoolWrapper.getServerName() + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json"));
                 fWriter = new FileWriter(out);
                 bWriter = new BufferedWriter(fWriter);
-                String log = threadPoolWrapper.toJSON().toString();
+                String log = threadPoolWrapper.toJSON().toString(4);
                 bWriter.write(log);
                 bWriter.flush();
             }
