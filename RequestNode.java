@@ -1,3 +1,6 @@
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+
 import org.json.JSONObject;
 
 public class RequestNode {
@@ -5,6 +8,35 @@ public class RequestNode {
     private String responseCode;
     private long requestTime;
     private long responseTime;
+    private static String dateFormat ="yy/MM/dd HH-mm-ss.SSS";
+
+
+    public String getDateFormat() {
+        return dateFormat;
+    }
+
+
+    public static void setDateFormat(String dateFormat) {
+        RequestNode.dateFormat = dateFormat;
+    }
+
+    private static String getFormattedDate(Date date){
+        SimpleDateFormat sDateFormat = new SimpleDateFormat(dateFormat); 
+        String formattedDate = sDateFormat.format(date);
+        return formattedDate;
+    }
+
+    public String getFormattedRequestTime(){
+        return RequestNode.getFormattedDate(new Date(requestTime));
+    }
+
+    public String getFormattedResponseTime(){
+        return RequestNode.getFormattedDate(new Date(responseTime));
+    }
+
+    public long getDelta(){
+        return this.responseTime - this.requestTime;
+    }
 
     public RequestNode setRequestTime(long requestTime){
         this.requestTime = requestTime;
@@ -48,11 +80,13 @@ public class RequestNode {
         this.responseCode = responseCode;
         return this;
     }
+
     public JSONObject toJSON(){
         JSONObject root = new JSONObject().put("responseCode", responseCode)
                                             .put("response", response)
-                                            .put("requestTime", requestTime)
-                                            .put("responseTime", responseTime);
+                                            .put("requestTime", getFormattedRequestTime())
+                                            .put("responseTime", getFormattedResponseTime())
+                                            .put("delta", "" + getDelta() + "ms");
         return root;
     }
 
