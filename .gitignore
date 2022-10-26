@@ -1,5 +1,6 @@
 /Logs
 /urls
+/backup
 *.class
 *.txt
 *.jar

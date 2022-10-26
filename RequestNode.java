@@ -6,8 +6,8 @@ import org.json.JSONObject;
 public class RequestNode {
     private String response;
     private String responseCode;
-    private long requestTime;
-    private long responseTime;
+    private long requestDate;
+    private long responseDate;
     private static String dateFormat ="yy/MM/dd HH-mm-ss.SSS";
 
 
@@ -21,49 +21,47 @@ public class RequestNode {
     }
 
     private static String getFormattedDate(Date date){
-        SimpleDateFormat sDateFormat = new SimpleDateFormat(dateFormat); 
-        String formattedDate = sDateFormat.format(date);
-        return formattedDate;
+        return new SimpleDateFormat(dateFormat).format(date);
     }
 
-    public String getFormattedRequestTime(){
-        return RequestNode.getFormattedDate(new Date(requestTime));
+    public String getFormattedRequestDate(){
+        return RequestNode.getFormattedDate(new Date(requestDate));
     }
 
-    public String getFormattedResponseTime(){
-        return RequestNode.getFormattedDate(new Date(responseTime));
+    public String getFormattedResponseDate(){
+        return RequestNode.getFormattedDate(new Date(responseDate));
     }
 
     public long getDelta(){
-        return this.responseTime - this.requestTime;
+        return this.responseDate - this.requestDate;
     }
 
-    public RequestNode setRequestTime(long requestTime){
-        this.requestTime = requestTime;
+    public RequestNode setRequestDate(long requestDate){
+        this.requestDate = requestDate;
         return this;
     }
 
-    public RequestNode setRequestTime(){
-        this.requestTime = System.currentTimeMillis();
+    public RequestNode setRequestDate(){
+        this.requestDate = System.currentTimeMillis();
         return this;
     }
 
-    public RequestNode setResponseTime(long responseTime){
-        this.responseTime = responseTime;
+    public RequestNode setResponseDate(long responseDate){
+        this.responseDate = responseDate;
         return this;
     }
 
-    public RequestNode setResponseTime(){
-        this.responseTime = System.currentTimeMillis();
+    public RequestNode setResponseDate(){
+        this.responseDate = System.currentTimeMillis();
         return this;
     }
 
-    public long getRequestTime(){
-        return this.requestTime;
+    public long getRequestDate(){
+        return this.requestDate;
     }
 
-    public long getResponseTime(){
-        return this.responseTime;
+    public long getResponseDate(){
+        return this.responseDate;
     }
 
     public String getResponse() {
@@ -84,23 +82,23 @@ public class RequestNode {
     public JSONObject toJSON(){
         JSONObject root = new JSONObject().put("responseCode", responseCode)
                                             .put("response", response)
-                                            .put("requestTime", getFormattedRequestTime())
-                                            .put("responseTime", getFormattedResponseTime())
-                                            .put("delta", "" + getDelta() + "ms");
+                                            .put("requestDate", getFormattedRequestDate())
+                                            .put("responseDate", getFormattedResponseDate())
+                                            .put("responseTime", "" + getDelta() + "ms");
         return root;
     }
 
     public RequestNode(String response, String responseCode){
         this.response = response;
         this.responseCode = responseCode;
-        this.setRequestTime();
-        this.setResponseTime();
+        this.setRequestDate();
+        this.setResponseDate();
     }
 
     public RequestNode(){
         this.response = "";
         this.responseCode = "";
-        this.setRequestTime();
-        this.setResponseTime();
+        this.setRequestDate();
+        this.setResponseDate();
     }
 }

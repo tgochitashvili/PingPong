@@ -24,7 +24,7 @@ public class Process implements Runnable {
             con.connect();
             URLNode.addRequestNode(requestNode.setResponse(con.getResponseMessage())
                                                 .setResponseCode("" + con.getResponseCode())
-                                                .setResponseTime());
+                                                .setResponseDate());
         }
         catch(Exception e){
             URLNode.addRequestNode(new RequestNode(e.getMessage(),"-1"));
