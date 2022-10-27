@@ -1,0 +1,10 @@
+/Logs
+/urls
+/backup
+*.class
+*.txt
+*.jar
+*.sh
+*.ps
+*.bat
+*.xlsx
