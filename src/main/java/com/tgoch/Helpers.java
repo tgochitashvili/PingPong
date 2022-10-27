@@ -18,7 +18,7 @@ import java.io.FileWriter;
 
 public class Helpers {
 
-    public static long loopTimeMillis = 50;
+    public static long loopTimeMillis = 200;
 
     public enum LoopAction {
         EXIT,
@@ -27,7 +27,7 @@ public class Helpers {
         PROMPT
     }
 
-    public enum LogType{
+    public enum FileType{
         JSON,
         TXT
     }
@@ -49,11 +49,6 @@ public class Helpers {
 
         if(argMap.containsKey("serverpath")){
             if(!argMap.containsKey("token")){
-                argMap.putIfAbsent("valid", "false");
-            }
-        }
-        if(argMap.getOrDefault("fileype", "txt")=="xlsx"){
-            if(!argMap.containsKey("serversheet") || !argMap.containsKey("urlsheet")){
                 argMap.putIfAbsent("valid", "false");
             }
         }
@@ -81,16 +76,14 @@ public class Helpers {
         System.out.println("\t urlpath=x\t\t - mandatory, path to the file containing either full or tokenized URLs");
         System.out.println("\t token=x\t\t - token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
         System.out.println("\t successcode=x\t\t - success code to check against for errors (default: 200)");
-        System.out.println("\t fileType=x\t\t - source file type, txt or xlsx, needs serversheet and urlsheet for xlsx (default: txt)");
-        System.out.println("\t serversheet=x\t\t serverlist sheet name for xlsx (default: serverlist)");
-        System.out.println("\t urllist=x\t\t urllist sheet name for xlsx (default: urllist)");
         System.exit(-1);
     }
 
-    public static LinkedList<ProcessPool> buildProcessPools(String urlpath, String serverpath, String token){
+    public static LinkedList<ProcessPool> buildProcessPools(String urlpath, String serverpath, String token) throws IOException{
         LinkedList<ProcessPool> processPools = !serverpath.equals("") && !token.equals("") ?
                                                 Readers.getProcessPoolsTxt(urlpath, serverpath, token)
                                                 :Readers.getProcessPoolsTxt(urlpath);
+
         return processPools;
     }
 
@@ -119,6 +112,7 @@ public class Helpers {
     }
 
     public static void trackThreadPoolWrapperProgress(LinkedList<ThreadPoolWrapper> poolList, long timeout, String successCode) throws InterruptedException{
+        timeout = (long) (timeout*2);
         long start = System.currentTimeMillis();
         boolean allDone;
         while((System.currentTimeMillis()-start) < timeout){
@@ -151,7 +145,7 @@ public class Helpers {
         }
     }
 
-    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors, LogType logType) throws IOException{
+    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors, FileType logType) throws IOException{
         switch(logType){
             case JSON:
                 logJSON(threadPoolWrappers, onlyErrors);
@@ -211,7 +205,7 @@ public class Helpers {
                 ProcessPool processPool = threadPoolWrapper.getProcessPool();
                 LinkedList<Process> processList = onlyErrors?
                                 processPool.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
-                                :processPool.processList;
+                                :processPool.getProcessList();
                 Files.createDirectories(Paths.get("./Logs/"));
                 out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + threadPoolWrapper.getServerName() + ".txt");
                 fWriter = new FileWriter(out);
@@ -249,7 +243,7 @@ public class Helpers {
         boolean onlyErrors = response.contains("e");
 
         if(response.contains("w"))
-            log(threadPoolWrappers, onlyErrors, LogType.JSON);
+            log(threadPoolWrappers, onlyErrors, FileType.JSON);
 
         if(response.contains("r"))
             action = LoopAction.CONTINUE;

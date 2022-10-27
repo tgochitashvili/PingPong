@@ -3,6 +3,9 @@ package com.tgoch;
 
 import java.util.LinkedList;
 import java.util.Scanner;
+
+import com.tgoch.Helpers.FileType;
+
 import java.util.HashMap;
 
 import java.io.IOException;
@@ -48,7 +51,7 @@ public class Ping{
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
 
         LinkedList<ProcessPool> processPools = Helpers.buildProcessPools(urlpath, serverpath, token);
-        long timeout = (Process.readTimeout + Process.connTimeout)*processPools.get(0).processList.size();
+        long timeout = (Process.readTimeout + Process.connTimeout)*processPools.get(0).getProcessList().size();
         Thread.sleep(1000);
         while(true){
             LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildThreadPools(processPools, nThreads, successCode);

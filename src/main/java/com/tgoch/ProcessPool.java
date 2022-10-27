@@ -5,10 +5,18 @@ import java.util.LinkedList;
 import com.json.JSONArray;
 import com.json.JSONObject;
 public class ProcessPool{
-    public LinkedList<Process> processList;
+    private LinkedList<Process> processList;
     public String serverName;
    
 
+    public LinkedList<Process> getProcessList(){
+        return this.processList;
+    }
+
+    public ProcessPool addProcess(Process process){
+        processList.add(process);
+        return this;
+    }
     public LinkedList<Process> mismatchedProcesses(String responseCode){
         LinkedList<Process> tempProcessList = new LinkedList<Process>();
         for(Process process: this.processList){
