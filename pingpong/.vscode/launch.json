@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Ping",
+            "request": "launch",
+            "mainClass": "com.tgoch.Ping",
+            "projectName": "pingpong",
+            "args": "threads=200 readTimeout=5000 connTimeout=5000 serverpath=servers.txt urlpath=urls.txt token=SERVER_TOKEN successcode=200"
+        }
+    ]
+}
