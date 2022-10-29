@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 import com.tgoch.Helpers.FileType;
+import com.tgoch.Helpers.LoopAction;
 
 import java.util.HashMap;
 
@@ -38,14 +39,20 @@ public class Ping{
         String urlpath = args.get("urlpath");
         String serverpath = args.getOrDefault("serverpath","");
         String token = args.getOrDefault("token","");
-        int nThreads = Runtime.getRuntime().availableProcessors()*5;
-        nThreads = Integer.parseInt(args.getOrDefault("threads", "" + nThreads));
+        int nThreads = Integer.parseInt(args.getOrDefault("threads",
+                                                            "" + Runtime.getRuntime().availableProcessors()*5));
+        Helpers.FileType logType = Helpers.FileType.getValue(
+            args.getOrDefault("logtype",
+                            "json")
+            );
 
         System.out.println("Threads: " + nThreads);
 
         Process.readTimeout = Integer.parseInt(args.getOrDefault("readTimeout", "1000"));
         Process.connTimeout = Integer.parseInt(args.getOrDefault("connTimeout", "1000"));
         String successCode = args.getOrDefault("successcode", "200");
+
+        
 
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
@@ -63,7 +70,21 @@ public class Ping{
                 String response = successCode;
                 try{
                     response =  scnr.next();
-                    action = Helpers.continueLoop(threadPoolList, response);
+                    LoopAction action1 = LoopAction.PROMPT;
+                    boolean onlyErrors1 = response.contains("e");
+                    
+                    if(response.contains("w"))
+                        Helpers.log(threadPoolList, onlyErrors1, logType);
+                    
+                    if(response.contains("r"))
+                        action1 = LoopAction.CONTINUE;
+                    
+                    if(onlyErrors1)
+                        action1 = LoopAction.ONLYERRORS;
+                    
+                    if(response.contains("q"))
+                        action1 = LoopAction.EXIT;
+                    action = action1;
                     onlyErrors = (action == Helpers.LoopAction.ONLYERRORS);
                     switch(action){
                         case EXIT:

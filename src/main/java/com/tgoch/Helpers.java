@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -18,6 +20,8 @@ import java.io.FileWriter;
 
 public class Helpers {
 
+    private static Path logPath = null;
+
     public static long loopTimeMillis = 200;
 
     public enum LoopAction {
@@ -28,8 +32,24 @@ public class Helpers {
     }
 
     public enum FileType{
-        JSON,
-        TXT
+        JSON("json"),
+        TXT("txt");
+
+        String key;
+
+        FileType(String key){
+            this.key = key;
+        }
+
+        static FileType getValue(String in){
+            in = in.toLowerCase();
+            switch(in){
+                case "json":
+                    return FileType.JSON;
+                default:
+                    return FileType.TXT;
+            }
+        }
     }
 
     public static HashMap<String,String> argsToMap(String[]args){
@@ -76,13 +96,14 @@ public class Helpers {
         System.out.println("\t urlpath=x\t\t - mandatory, path to the file containing either full or tokenized URLs");
         System.out.println("\t token=x\t\t - token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
         System.out.println("\t successcode=x\t\t - success code to check against for errors (default: 200)");
+        System.out.println("\t logtype=x\t\t - type of logging to use (default: json)");
         System.exit(-1);
     }
 
     public static LinkedList<ProcessPool> buildProcessPools(String urlpath, String serverpath, String token) throws IOException{
-        LinkedList<ProcessPool> processPools = !serverpath.equals("") && !token.equals("") ?
-                                                Readers.getProcessPoolsTxt(urlpath, serverpath, token)
-                                                :Readers.getProcessPoolsTxt(urlpath);
+        LinkedList<ProcessPool> processPools = !serverpath.equals("") && !token.equals("") 
+                                                ? Readers.getProcessPoolsTxt(urlpath, serverpath, token)
+                                                : Readers.getProcessPoolsTxt(urlpath);
 
         return processPools;
     }
@@ -160,11 +181,12 @@ public class Helpers {
         FileWriter fWriter = null;
         BufferedWriter bWriter =  null;
         File out = null;
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss"); 
-        String logDate = sDateFormat.format(new Date(System.currentTimeMillis()));
-        try{
-            Path path = Files.createDirectories(Paths.get("./Logs/" + logDate + "/"));             
+       
+        Path path = getLogPath();
+
+        try{            
             for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
+                renameFilesToTemp(getFiles(path));
                 String currTime = "" + System.currentTimeMillis();
                 out = new File(path + "/" + threadPoolWrapper.getServerName() + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json"));
                 fWriter = new FileWriter(out);
@@ -172,6 +194,7 @@ public class Helpers {
                 String log = threadPoolWrapper.toJSON().toString(4);
                 bWriter.write(log);
                 bWriter.flush();
+                deleteFiles(path, Pattern.compile("*.temp"));
             }
         }
         catch(IOException e){
@@ -188,8 +211,51 @@ public class Helpers {
                     fWriter.close();
                 }
             }
+        }        
+    }
+
+    public static LinkedList<File> getFiles(Path path){
+        return new LinkedList<File>(Arrays.asList(path.toFile().listFiles()));
+    }
+    
+    public static LinkedList<File> renameFilesToTemp(LinkedList<File> files){
+        for(File file: files){
+            file.renameTo(new File(file.getPath() + ".temp"));
         }
+        return files;
+    }
+
+    public static void deleteFiles(Path path, Pattern pattern){
+        LinkedList<File> files = getFiles(path);
+        for(File file: files){
+            if(pattern.matcher(file.getName()).matches()){
+                file.delete();
+            }
+        }
+    }
+
+    public static Path getLogPath() {
+        if(logPath!=null)
+            return logPath;
         
+        String logDate = "";
+        Path path = null;
+        try{
+            logDate = formatCurrentDate();
+            path = Files.createDirectories(Paths.get("./Logs/" + logDate + "/"));  
+        }
+        catch(IOException e){
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        logPath = path;
+        return path;
+    }
+
+    public static String formatCurrentDate() {
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss"); 
+        String logDate = sDateFormat.format(new Date(System.currentTimeMillis()));
+        return logDate;
     }
 
     public static void logTxt(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
@@ -236,23 +302,5 @@ public class Helpers {
                 }
             }
         }
-    }
-
-    public static LoopAction continueLoop(LinkedList<ThreadPoolWrapper> threadPoolWrappers, String response) throws IOException{
-        LoopAction action = LoopAction.PROMPT;
-        boolean onlyErrors = response.contains("e");
-
-        if(response.contains("w"))
-            log(threadPoolWrappers, onlyErrors, FileType.JSON);
-
-        if(response.contains("r"))
-            action = LoopAction.CONTINUE;
-        
-        if(onlyErrors)
-            action = LoopAction.ONLYERRORS;
-
-        if(response.contains("q"))
-            action = LoopAction.EXIT;
-        return action;
     }
 }
