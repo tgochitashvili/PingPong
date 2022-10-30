@@ -4,9 +4,6 @@ package com.tgoch;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-import com.tgoch.Helpers.FileType;
-import com.tgoch.Helpers.LoopAction;
-
 import java.util.HashMap;
 
 import java.io.IOException;
@@ -41,10 +38,6 @@ public class Ping{
         String token = args.getOrDefault("token","");
         int nThreads = Integer.parseInt(args.getOrDefault("threads",
                                                             "" + Runtime.getRuntime().availableProcessors()*5));
-        Helpers.FileType logType = Helpers.FileType.getValue(
-            args.getOrDefault("logtype",
-                            "json")
-            );
 
         System.out.println("Threads: " + nThreads);
 
@@ -64,41 +57,26 @@ public class Ping{
             LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildThreadPools(processPools, nThreads, successCode);
             Helpers.runPools(threadPoolList, onlyErrors);
             Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout, successCode);
-            Helpers.LoopAction action = Helpers.LoopAction.PROMPT;
-            while(action == Helpers.LoopAction.PROMPT){
-                System.out.println("(w) Write logs; (q) Quit; (r) Retry; (e) Retry errors;");
-                String response = successCode;
+            System.out.println("(q) Quit; (r) Retry; (e) Retry errors;");
+            String response = successCode;
+            try{
                 try{
-                    response =  scnr.next();
-                    LoopAction action1 = LoopAction.PROMPT;
-                    boolean onlyErrors1 = response.contains("e");
-                    
-                    if(response.contains("w"))
-                        Helpers.log(threadPoolList, onlyErrors1, logType);
-                    
-                    if(response.contains("r"))
-                        action1 = LoopAction.CONTINUE;
-                    
-                    if(onlyErrors1)
-                        action1 = LoopAction.ONLYERRORS;
-                    
-                    if(response.contains("q"))
-                        action1 = LoopAction.EXIT;
-                    action = action1;
-                    onlyErrors = (action == Helpers.LoopAction.ONLYERRORS);
-                    switch(action){
-                        case EXIT:
-                            return;
-                        default:
-                            continue;
-                    }
-                }
-                catch(Exception e){
+                    Helpers.log(threadPoolList, onlyErrors);
+                }    
+                catch(IOException e){
                     e.printStackTrace();
-                    System.exit(-1);
                 }
+                response =  scnr.next();
+                onlyErrors = response.contains("e");
+                if(response.contains("q"))
+                    return;
+                if(response.contains("r"))
+                    continue;
             }
-            
+            catch(Exception e){
+                e.printStackTrace();
+                System.exit(-1);
+            }
         }
     }
 }

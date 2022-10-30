@@ -8,9 +8,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,13 +21,6 @@ public class Helpers {
     private static Path logPath = null;
 
     public static long loopTimeMillis = 200;
-
-    public enum LoopAction {
-        EXIT,
-        CONTINUE,
-        ONLYERRORS,
-        PROMPT
-    }
 
     public enum FileType{
         JSON("json"),
@@ -96,7 +87,6 @@ public class Helpers {
         System.out.println("\t urlpath=x\t\t - mandatory, path to the file containing either full or tokenized URLs");
         System.out.println("\t token=x\t\t - token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
         System.out.println("\t successcode=x\t\t - success code to check against for errors (default: 200)");
-        System.out.println("\t logtype=x\t\t - type of logging to use (default: json)");
         System.exit(-1);
     }
 
@@ -133,7 +123,6 @@ public class Helpers {
     }
 
     public static void trackThreadPoolWrapperProgress(LinkedList<ThreadPoolWrapper> poolList, long timeout, String successCode) throws InterruptedException{
-        timeout = (long) (timeout*2);
         long start = System.currentTimeMillis();
         boolean allDone;
         while((System.currentTimeMillis()-start) < timeout){
@@ -149,13 +138,13 @@ public class Helpers {
                 if(numErrors > 0)
                     toPrint += " Errors: " + numErrors;
                 printBuffer += toPrint + "\n";
+                CLEARSCREEN();
+                System.out.print(printBuffer);
             }
             if(allDone){
                 break;
             }
             allDone = true;
-            CLEARSCREEN();
-            System.out.print(printBuffer);
             printBuffer = "";
             Thread.sleep(loopTimeMillis);
         }
@@ -166,17 +155,7 @@ public class Helpers {
         }
     }
 
-    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors, FileType logType) throws IOException{
-        switch(logType){
-            case JSON:
-                logJSON(threadPoolWrappers, onlyErrors);
-                break;
-            default:
-                logTxt(threadPoolWrappers, onlyErrors);
-        }
-    }
-
-    public static void logJSON(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
+    public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
         
         FileWriter fWriter = null;
         BufferedWriter bWriter =  null;
@@ -184,22 +163,17 @@ public class Helpers {
        
         Path path = getLogPath();
 
-        try{            
+        try{ 
+            renameFilesToTemp(path);           
             for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
-                renameFilesToTemp(getFiles(path));
-                String currTime = "" + System.currentTimeMillis();
-                out = new File(path + "/" + threadPoolWrapper.getServerName() + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json"));
-                fWriter = new FileWriter(out);
-                bWriter = new BufferedWriter(fWriter);
-                String log = threadPoolWrapper.toJSON().toString(4);
-                bWriter.write(log);
-                bWriter.flush();
-                deleteFiles(path, Pattern.compile("*.temp"));
-            }
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
+                try{
+                    String currTime = "" + System.currentTimeMillis();
+                    out = new File(path + "/" + threadPoolWrapper.getServerName() + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json"));
+                    fWriter = new FileWriter(out);
+                    bWriter = new BufferedWriter(fWriter);
+                    String log = threadPoolWrapper.toJSON().toString(4);
+                    bWriter.write(log);
+                }
         finally{
             if(bWriter!=null){
                 bWriter.flush();
@@ -211,24 +185,39 @@ public class Helpers {
                     fWriter.close();
                 }
             }
-        }        
+        }   
+                
+            }
+            deleteFiles(path, ".temp");
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }     
     }
 
     public static LinkedList<File> getFiles(Path path){
         return new LinkedList<File>(Arrays.asList(path.toFile().listFiles()));
     }
     
-    public static LinkedList<File> renameFilesToTemp(LinkedList<File> files){
-        for(File file: files){
-            file.renameTo(new File(file.getPath() + ".temp"));
-        }
-        return files;
-    }
-
-    public static void deleteFiles(Path path, Pattern pattern){
+    public static void renameFilesToTemp(Path path){
         LinkedList<File> files = getFiles(path);
         for(File file: files){
-            if(pattern.matcher(file.getName()).matches()){
+            if(file.isFile()){
+                Path source = file.toPath();
+                Path target = new File(file.getPath() + ".temp").toPath();
+                try {
+                    Files.move(source,target);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void deleteFiles(Path path, String extension){
+        LinkedList<File> files = getFiles(path);
+        for(File file: files){
+            if(file.getName().endsWith(extension)){
                 file.delete();
             }
         }
@@ -256,51 +245,5 @@ public class Helpers {
         SimpleDateFormat sDateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss"); 
         String logDate = sDateFormat.format(new Date(System.currentTimeMillis()));
         return logDate;
-    }
-
-    public static void logTxt(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
-        
-        FileWriter fWriter = null;
-        BufferedWriter bWriter =  null;
-        PrintWriter pWriter = null;
-        File out = null;
-
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("dd-MMM-yy_HH-mm-ss");    
-        try{
-            for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
-                ProcessPool processPool = threadPoolWrapper.getProcessPool();
-                LinkedList<Process> processList = onlyErrors?
-                                processPool.mismatchedProcesses(threadPoolWrapper.getSuccessCode())
-                                :processPool.getProcessList();
-                Files.createDirectories(Paths.get("./Logs/"));
-                out = new File("./Logs/" + sDateFormat.format(new Date(System.currentTimeMillis())) + "-" + threadPoolWrapper.getServerName() + ".txt");
-                fWriter = new FileWriter(out);
-                bWriter = new BufferedWriter(fWriter);
-                pWriter = new PrintWriter(bWriter, true);
-                for(Process process: processList){
-                    pWriter.println(process.URLNode.getURL() + ": " + process.URLNode.getLastFormattedResponse());
-                }
-            }
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-        finally{
-            if(pWriter!=null){
-                pWriter.flush();
-                pWriter.close();
-            } else {
-                if(bWriter!=null){
-                    bWriter.flush();
-                    bWriter.close();
-                }
-                else{
-                    if(fWriter!=null){
-                        fWriter.flush();
-                        fWriter.close();
-                    }
-                }
-            }
-        }
     }
 }
