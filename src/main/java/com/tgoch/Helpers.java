@@ -88,6 +88,7 @@ public class Helpers {
         System.out.println("\t urlpath=x\t\t - mandatory, path to the file containing either full or tokenized URLs");
         System.out.println("\t token=x\t\t - token to look for in the urls and replace with the real servers, default is empty and will ignore the server list");
         System.out.println("\t successcode=x\t\t - success code to check against for errors (default: 200)");
+        System.out.println("\t lightlog=x\t\t - will only log a single entry per request if true (default: false)");
         System.exit(-1);
     }
 

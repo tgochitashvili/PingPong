@@ -13,6 +13,15 @@ public class RequestNode {
     private long responseDate;
     private static String dateFormat ="yy/MM/dd HH-mm-ss.SSS";
 
+    private static boolean lightlog = false;
+
+    public static void setLogType(boolean lightlog){
+        RequestNode.lightlog = lightlog;
+    }
+
+    public static boolean getLogType(){
+        return RequestNode.lightlog;
+    }
 
     public String getDateFormat() {
         return dateFormat;
@@ -88,11 +97,15 @@ public class RequestNode {
     }
 
     public JSONObject toJSON(){
-        return new JSONObject().put("responseCode", responseCode)
-                                            .put("response", response)
-                                            .put("requestDate", getFormattedRequestDate())
-                                            .put("responseDate", getFormattedResponseDate())
-                                            .put("responseTime", "" + getDelta() + "ms");
+
+        return lightlog?
+                new JSONObject().put("response", this.getFormattedResponse()):
+
+                new JSONObject().put("responseCode", responseCode)
+                        .put("response", response)
+                        .put("requestDate", getFormattedRequestDate())
+                        .put("responseDate", getFormattedResponseDate())
+                        .put("responseTime", "" + getDelta() + "ms");
     }
 
     public boolean getSuccess(){
@@ -115,5 +128,8 @@ public class RequestNode {
         this.responseCode = "";
         this.setRequestDate();
         this.setResponseDate();
+    }
+    public String getFormattedResponse(){
+        return getResponseCode() + " - " + getResponse();
     }
 }

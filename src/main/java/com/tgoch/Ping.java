@@ -34,14 +34,15 @@ public class Ping{
         int nThreads = Integer.parseInt(args.getOrDefault("threads",
                                                             "" + Runtime.getRuntime().availableProcessors()*5));
 
-        System.out.println("Threads: " + nThreads);
 
-        Process.readTimeout = Integer.parseInt(args.getOrDefault("readTimeout", "1000"));
-        Process.connTimeout = Integer.parseInt(args.getOrDefault("connTimeout", "1000"));
+        boolean lightlog = Boolean.parseBoolean(args.getOrDefault("lightlog", "false").toLowerCase());
+        RequestNode.setLogType(lightlog);
+        Process.readTimeout = Integer.parseInt(args.getOrDefault("readtimeout", "1000"));
+        Process.connTimeout = Integer.parseInt(args.getOrDefault("conntimeout", "1000"));
         String successCode = args.getOrDefault("successcode", "200");
-
         RequestNode.setRequestSuccessCode(successCode);
 
+        System.out.println("Threads: " + nThreads);
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
 
