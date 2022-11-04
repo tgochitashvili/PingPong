@@ -36,7 +36,6 @@ public class Process implements Runnable {
             if(con != null)
                 con.disconnect();
         }
-        return;
     }
     public boolean checkResponse(String responseCode){
         return this.URLNode.checkLastResponse(responseCode);

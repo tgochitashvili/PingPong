@@ -82,12 +82,11 @@ public class RequestNode {
     }
 
     public JSONObject toJSON(){
-        JSONObject root = new JSONObject().put("responseCode", responseCode)
+        return new JSONObject().put("responseCode", responseCode)
                                             .put("response", response)
                                             .put("requestDate", getFormattedRequestDate())
                                             .put("responseDate", getFormattedResponseDate())
                                             .put("responseTime", "" + getDelta() + "ms");
-        return root;
     }
 
     public RequestNode(String response, String responseCode){

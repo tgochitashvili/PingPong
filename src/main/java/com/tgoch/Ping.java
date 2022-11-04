@@ -19,19 +19,14 @@ public class Ping{
             Helpers.printInfoAndQuit();
         }
         boolean onlyErrors = false;
-        Scanner scnr = new Scanner(System.in);
-        try{
+        try (Scanner scnr = new Scanner(System.in)) {
             run(argMap, onlyErrors, scnr);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally{
-            scnr.close();
         }
     }
 
-    public static void run(HashMap<String,String> args, boolean onlyErrors, Scanner scnr) throws IOException, InterruptedException{
+    public static void run(HashMap<String,String> args, boolean onlyErrors, Scanner scnr) throws InterruptedException{
         
         String urlpath = args.get("urlpath");
         String serverpath = args.getOrDefault("serverpath","");
@@ -50,32 +45,39 @@ public class Ping{
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");
 
-        LinkedList<ProcessPool> processPools = Helpers.buildProcessPools(urlpath, serverpath, token);
-        long timeout = (Process.readTimeout + Process.connTimeout)*processPools.get(0).getProcessList().size();
+        LinkedList<ProcessPool> processPools = Helpers.buildProcessPools(
+                urlpath,
+                serverpath,
+                token,
+                Helpers.FileType.TXT
+        );
+        long timeout = (long) (Process.readTimeout + Process.connTimeout) *processPools.get(0).getProcessList().size();
         Thread.sleep(1000);
         while(true){
             LinkedList<ThreadPoolWrapper> threadPoolList =  Helpers.buildThreadPools(processPools, nThreads, successCode);
             Helpers.runPools(threadPoolList, onlyErrors);
             Helpers.trackThreadPoolWrapperProgress(threadPoolList, timeout, successCode);
-            System.out.println("(q) Quit; (r) Retry; (e) Retry errors;");
-            String response = successCode;
-            try{
+            while(true){
+                System.out.println("(q) Quit; (r) Retry; (e) Retry errors;");
+                String response;
                 try{
-                    Helpers.log(threadPoolList, onlyErrors);
-                }    
-                catch(IOException e){
-                    e.printStackTrace();
+                    try{
+                        Helpers.log(threadPoolList, onlyErrors);
+                    }
+                    catch(IOException e){
+                        e.printStackTrace();
+                    }
+                    response =  scnr.next();
+                    onlyErrors = response.contains("e");
+                    if(response.contains("q"))
+                        return;
+                    if(response.contains("r") || onlyErrors)
+                        break;
                 }
-                response =  scnr.next();
-                onlyErrors = response.contains("e");
-                if(response.contains("q"))
-                    return;
-                if(response.contains("r"))
-                    continue;
-            }
-            catch(Exception e){
-                e.printStackTrace();
-                System.exit(-1);
+                catch(Exception e){
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
             }
         }
     }

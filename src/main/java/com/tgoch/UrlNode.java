@@ -7,7 +7,6 @@ public class UrlNode {
     private String URL;
     private LinkedList<RequestNode> requestNodeList;
 
-
     public RequestNode getLastRequestNode(){
         try{
             return this.requestNodeList.getLast();
@@ -17,18 +16,16 @@ public class UrlNode {
         }
     }
 
-    public UrlNode addRequestNode(RequestNode requestNode){
+    public void addRequestNode(RequestNode requestNode){
         this.requestNodeList.add(requestNode);
-        return this;
     }
 
-    public UrlNode setRequestNodeList(LinkedList<RequestNode> requestNodeList){
+    public void setRequestNodeList(LinkedList<RequestNode> requestNodeList){
         this.requestNodeList = requestNodeList;
-        return this;
     }
 
     public UrlNode resetRequestNodeList(){
-        this.setRequestNodeList(new LinkedList<RequestNode>());
+        this.setRequestNodeList(new LinkedList<>());
         return this;
     }
    
@@ -42,7 +39,8 @@ public class UrlNode {
     }
 
     public String getLastFormattedResponse(){
-        return this.getLastRequestNode().getResponseCode() + " - " + this.getLastRequestNode().getResponse();
+        RequestNode tempLastRequestNode = this.getLastRequestNode();
+        return tempLastRequestNode.getResponseCode() + " - " + tempLastRequestNode.getResponse();
     }
 
     public boolean checkLastResponse(String responseCode){

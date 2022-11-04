@@ -38,10 +38,7 @@ public class ThreadPoolWrapper{
     public String getSuccessCode(){
         return this.successCode;
     }
-    public ThreadPoolWrapper runProcesses(boolean onlyErrors){
-        if(this.processPool.getProcessList().size() < 0){
-            return this;
-        }
+    public void runProcesses(boolean onlyErrors){
         LinkedList<Process> tempProcessList = this.processPool.mismatchedProcesses(this.successCode);
         if(onlyErrors){
             if(tempProcessList.size() > 0)
@@ -50,7 +47,6 @@ public class ThreadPoolWrapper{
         else{
             runList(this.processPool.getProcessList());
         }
-        return this;
     }
     public void runList(LinkedList<Process> processList){
         for(Process process: processList){

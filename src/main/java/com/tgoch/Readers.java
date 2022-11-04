@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Readers{
     public static LinkedList<ProcessPool> getProcessPoolsTxt(String urlPath, String serverPath, String token){
-        LinkedList<ProcessPool> processList = new LinkedList<ProcessPool>();
+        LinkedList<ProcessPool> processList = new LinkedList<>();
         Scanner urlScnr = null;
         Scanner serverScnr = null;
         try{
@@ -14,8 +14,8 @@ public class Readers{
             urlScnr = new Scanner(urlFile);
             File serverFile = new File(serverPath);
             serverScnr = new Scanner(serverFile);
-            LinkedList<String> servers = new LinkedList<String>();
-            LinkedList<String> urls = new LinkedList<String>();
+            LinkedList<String> servers = new LinkedList<>();
+            LinkedList<String> urls = new LinkedList<>();
             while(serverScnr.hasNextLine()){
                 String tempStr = serverScnr.nextLine();
                 servers.add(tempStr);
@@ -41,12 +41,12 @@ public class Readers{
     
     public static LinkedList<ProcessPool> getProcessPoolsTxt(String urlPath){
         LinkedList<ProcessPool> processList = null;
-        ProcessPool processPool = null;
+        ProcessPool processPool;
         Scanner scnr = null;
         try{
             File urlFile = new File(urlPath);
             scnr = new Scanner(urlFile);
-            LinkedList<String> urls = new LinkedList<String>();
+            LinkedList<String> urls = new LinkedList<>();
             while(scnr.hasNextLine()){
                 urls.add(scnr.nextLine());
             }
@@ -55,7 +55,7 @@ public class Readers{
                 if(!url.equals(""))
                     processPool.addProcess(new Process(url));
             }
-            processList = new LinkedList<ProcessPool>();
+            processList = new LinkedList<>();
             processList.add(processPool);
         }
         catch (Exception e){
@@ -67,6 +67,10 @@ public class Readers{
             }
         }
         return processList;
+    }
+
+    public static LinkedList<ProcessPool> getProcessPoolsXlsx(String urlPath){
+        return null;
     }
 
 

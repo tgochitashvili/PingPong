@@ -1,11 +1,8 @@
 package com.tgoch;
 
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
@@ -24,9 +21,11 @@ public class Helpers {
 
     public enum FileType{
         JSON("json"),
-        TXT("txt");
+        TXT("txt"),
 
-        String key;
+        XLSX("xlsx");
+
+        final String key;
 
         FileType(String key){
             this.key = key;
@@ -37,6 +36,8 @@ public class Helpers {
             switch(in){
                 case "json":
                     return FileType.JSON;
+                case "xlsx":
+                    return FileType.XLSX;
                 default:
                     return FileType.TXT;
             }
@@ -44,14 +45,14 @@ public class Helpers {
     }
 
     public static HashMap<String,String> argsToMap(String[]args){
-        HashMap<String,String> argMap = new HashMap<String,String>();
-        for(int i = 0; i < args.length; i++){
-            String[] splitArg = args[i].split("=");
-            if(splitArg.length>2){
+        HashMap<String,String> argMap = new HashMap<>();
+        for (String arg : args) {
+            String[] splitArg = arg.split("=");
+            if (splitArg.length > 2) {
                 System.out.println("Incorrect argument format");
                 System.exit(-1);
             }
-            argMap.put(splitArg[0],splitArg[1]);
+            argMap.put(splitArg[0], splitArg[1]);
         }
 
         if(!argMap.containsKey("urlpath")){
@@ -74,7 +75,7 @@ public class Helpers {
                 String[] stringArray = {"clear"};
                 Runtime.getRuntime().exec(stringArray);
             }
-        } catch (IOException | InterruptedException ex) {}
+        } catch (IOException | InterruptedException ex) {ex.printStackTrace();}
     }
 
     public static void printInfoAndQuit(){
@@ -90,17 +91,19 @@ public class Helpers {
         System.exit(-1);
     }
 
-    public static LinkedList<ProcessPool> buildProcessPools(String urlpath, String serverpath, String token) throws IOException{
-        LinkedList<ProcessPool> processPools = !serverpath.equals("") && !token.equals("") 
+    public static LinkedList<ProcessPool> buildProcessPools(String urlpath, String serverpath, String token, FileType fileType) {
+        if(fileType == FileType.TXT)
+            return !serverpath.equals("") && !token.equals("")
                                                 ? Readers.getProcessPoolsTxt(urlpath, serverpath, token)
                                                 : Readers.getProcessPoolsTxt(urlpath);
-
-        return processPools;
+        else{
+            return Readers.getProcessPoolsXlsx(urlpath);
+        }
     }
 
     public static LinkedList<ThreadPoolWrapper> buildThreadPools(LinkedList<ProcessPool> processPools, int nThreads, String successCode){
         
-        LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<ThreadPoolWrapper>();
+        LinkedList<ThreadPoolWrapper> threadPoolList = new LinkedList<>();
         for(ProcessPool processPool:processPools){
             threadPoolList.add(
                 new ThreadPoolWrapper()
@@ -110,48 +113,49 @@ public class Helpers {
                                         )
                                     .setProcessPool(processPool)
                                     .setSuccessCode(successCode)
-                                    );
+            );
         }
         return threadPoolList;
     }
 
-    public static LinkedList<ThreadPoolWrapper> runPools(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors){
+    public static void runPools(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors){
         for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
             threadPoolWrapper.runProcesses(onlyErrors);
         }
-        return threadPoolWrappers;
     }
 
     public static void trackThreadPoolWrapperProgress(LinkedList<ThreadPoolWrapper> poolList, long timeout, String successCode) throws InterruptedException{
         long start = System.currentTimeMillis();
-        boolean allDone;
         while((System.currentTimeMillis()-start) < timeout){
-            allDone = true;
-            String printBuffer = "";
+            boolean allDone = true;
+            StringBuilder printBuffer = new StringBuilder();
             for(ThreadPoolWrapper threadPoolWrapper: poolList){
-                long numTasks = threadPoolWrapper.getExecutor().getTaskCount();
-                long progress = threadPoolWrapper.getExecutor().getCompletedTaskCount();
+                ThreadPoolExecutor tempExecutor = threadPoolWrapper.getExecutor();
+                long numTasks = tempExecutor.getTaskCount();
+                long progress = tempExecutor.getCompletedTaskCount();
                 boolean currentDone = (progress >= numTasks);
                 allDone &= currentDone;
                 int numErrors = (threadPoolWrapper.getProcessPool().mismatchedProcesses(successCode)).size();
-                String toPrint = "[" + threadPoolWrapper.getServerName() + "]\t\t Progress : " + progress + "/" + numTasks + ";";
-                if(numErrors > 0)
-                    toPrint += " Errors: " + numErrors;
-                printBuffer += toPrint + "\n";
-                CLEARSCREEN();
-                System.out.print(printBuffer);
+                String toPrint;
+                toPrint = "[" + threadPoolWrapper.getServerName() + "]\t\t Progress : " + progress + "/" + numTasks + ";" + (" Errors: " + numErrors);
+                printBuffer.append(toPrint).append("\n");
             }
+            CLEARSCREEN();
+            System.out.print(printBuffer);
             if(allDone){
                 break;
             }
-            allDone = true;
-            printBuffer = "";
             Thread.sleep(loopTimeMillis);
         }
 
         for(ThreadPoolWrapper threadPoolWrapper: poolList){
             threadPoolWrapper.getExecutor().shutdown();
-            threadPoolWrapper.getExecutor().awaitTermination(timeout, TimeUnit.MILLISECONDS);
+            boolean awaitResult = threadPoolWrapper
+                    .getExecutor()
+                    .awaitTermination(timeout, TimeUnit.MILLISECONDS);
+            if(!awaitResult){
+                System.out.println("Timeout exceeded for: " + threadPoolWrapper.getServerName());
+            }
         }
     }
 
@@ -159,7 +163,7 @@ public class Helpers {
         
         FileWriter fWriter = null;
         BufferedWriter bWriter =  null;
-        File out = null;
+        File out;
        
         Path path = getLogPath();
 
@@ -196,17 +200,17 @@ public class Helpers {
     }
 
     public static LinkedList<File> getFiles(Path path){
-        return new LinkedList<File>(Arrays.asList(path.toFile().listFiles()));
+        return new LinkedList<>(Arrays.asList(Objects.requireNonNull(path.toFile().listFiles())));
     }
     
     public static void renameFilesToTemp(Path path){
         LinkedList<File> files = getFiles(path);
         for(File file: files){
             if(file.isFile()){
-                Path source = file.toPath();
-                Path target = new File(file.getPath() + ".temp").toPath();
                 try {
-                    Files.move(source,target);
+                    if(!file.renameTo(new File(file.getPath() + ".temp"))){
+                        throw new IOException("Could not rename file!");
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -214,11 +218,13 @@ public class Helpers {
         }
     }
 
-    public static void deleteFiles(Path path, String extension){
+    public static void deleteFiles(Path path, String extension) throws IOException {
         LinkedList<File> files = getFiles(path);
         for(File file: files){
             if(file.getName().endsWith(extension)){
-                file.delete();
+                if(!file.delete()){
+                    throw new IOException("Could not delete file!");
+                }
             }
         }
     }
@@ -227,7 +233,7 @@ public class Helpers {
         if(logPath!=null)
             return logPath;
         
-        String logDate = "";
+        String logDate;
         Path path = null;
         try{
             logDate = formatCurrentDate();
@@ -242,8 +248,7 @@ public class Helpers {
     }
 
     public static String formatCurrentDate() {
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss"); 
-        String logDate = sDateFormat.format(new Date(System.currentTimeMillis()));
-        return logDate;
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("yy-MM-dd_HH-mm-ss");
+        return sDateFormat.format(new Date(System.currentTimeMillis()));
     }
 }
