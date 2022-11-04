@@ -112,7 +112,6 @@ public class Helpers {
                                             (ThreadPoolExecutor) Executors.newFixedThreadPool(nThreads)
                                         )
                                     .setProcessPool(processPool)
-                                    .setSuccessCode(successCode)
             );
         }
         return threadPoolList;
@@ -135,9 +134,9 @@ public class Helpers {
                 long progress = tempExecutor.getCompletedTaskCount();
                 boolean currentDone = (progress >= numTasks);
                 allDone &= currentDone;
-                int numErrors = (threadPoolWrapper.getProcessPool().mismatchedProcesses(successCode)).size();
+                int numErrors = (threadPoolWrapper.getProcessPool().mismatchedProcesses()).size();
                 String toPrint;
-                toPrint = "[" + threadPoolWrapper.getServerName() + "]\t\t Progress : " + progress + "/" + numTasks + ";" + (" Errors: " + numErrors);
+                toPrint = "[" + threadPoolWrapper.getServerName() + "]\t\t Progress : " + progress + "/" + numTasks + "; \t" + (" Errors: " + numErrors);
                 printBuffer.append(toPrint).append("\n");
             }
             CLEARSCREEN();

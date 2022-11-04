@@ -3,6 +3,7 @@ package com.tgoch;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import com.json.JSONException;
 import com.json.JSONObject;
 
 public class Process implements Runnable {
@@ -37,8 +38,8 @@ public class Process implements Runnable {
                 con.disconnect();
         }
     }
-    public boolean checkResponse(String responseCode){
-        return this.URLNode.checkLastResponse(responseCode);
+    public boolean checkResponse(){
+        return this.URLNode.checkLastResponse();
     }
     public JSONObject toJSON(){
         return URLNode.toJSON();

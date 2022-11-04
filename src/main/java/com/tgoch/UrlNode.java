@@ -43,9 +43,8 @@ public class UrlNode {
         return tempLastRequestNode.getResponseCode() + " - " + tempLastRequestNode.getResponse();
     }
 
-    public boolean checkLastResponse(String responseCode){
-        String tempResponseCode = this.getLastRequestNode().getResponseCode();
-        return tempResponseCode.equals(responseCode) || tempResponseCode.equals("");
+    public boolean checkLastResponse(){
+        return this.getLastRequestNode().getSuccess();
     }
 
     public JSONObject toJSON(){

@@ -40,7 +40,7 @@ public class Ping{
         Process.connTimeout = Integer.parseInt(args.getOrDefault("connTimeout", "1000"));
         String successCode = args.getOrDefault("successcode", "200");
 
-        
+        RequestNode.setRequestSuccessCode(successCode);
 
         System.out.println("Read timeout limit: " + Process.readTimeout + " ms");
         System.out.println("Connection timeout limit: " + Process.connTimeout + " ms");

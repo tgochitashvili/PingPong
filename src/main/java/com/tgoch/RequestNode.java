@@ -6,6 +6,7 @@ import com.json.JSONObject;
 import java.text.SimpleDateFormat;
 
 public class RequestNode {
+    private static String successCode = "200";
     private String response;
     private String responseCode;
     private long requestDate;
@@ -73,6 +74,11 @@ public class RequestNode {
         this.response = response;
         return this;
     }
+
+    public boolean isSuccessful(String successCode){
+        return this.responseCode.equals(successCode);
+    }
+
     public String getResponseCode() {
         return this.responseCode;
     }
@@ -86,7 +92,16 @@ public class RequestNode {
                                             .put("response", response)
                                             .put("requestDate", getFormattedRequestDate())
                                             .put("responseDate", getFormattedResponseDate())
-                                            .put("responseTime", "" + getDelta() + "ms");
+                                            .put("responseTime", "" + getDelta() + "ms")
+                .put("isSuccessful","" + getSuccess());
+    }
+
+    public boolean getSuccess(){
+        return this.responseCode.equals("") || this.responseCode.equals(RequestNode.successCode);
+    }
+
+    public static void setRequestSuccessCode(String successCode){
+        RequestNode.successCode = successCode;
     }
 
     public RequestNode(String response, String responseCode){

@@ -1,14 +1,12 @@
 package com.tgoch;
 import java.util.LinkedList;
 import java.util.concurrent.ThreadPoolExecutor;
-
 import com.json.JSONObject;
 
 public class ThreadPoolWrapper{
     private String serverName;
     private ThreadPoolExecutor threadPoolExecutor;
     private ProcessPool processPool;
-    private String successCode = "200";
 
     public ThreadPoolWrapper setServerName(String serverName){
         this.serverName = serverName;
@@ -31,15 +29,8 @@ public class ThreadPoolWrapper{
     public ProcessPool getProcessPool(){
         return this.processPool;
     }
-    public ThreadPoolWrapper setSuccessCode(String successCode){
-        this.successCode = successCode;
-        return this;
-    }
-    public String getSuccessCode(){
-        return this.successCode;
-    }
     public void runProcesses(boolean onlyErrors){
-        LinkedList<Process> tempProcessList = this.processPool.mismatchedProcesses(this.successCode);
+        LinkedList<Process> tempProcessList = this.processPool.mismatchedProcesses();
         if(onlyErrors){
             if(tempProcessList.size() > 0)
                 runList(tempProcessList);
@@ -55,7 +46,7 @@ public class ThreadPoolWrapper{
     }
     public JSONObject toJSON(){
         JSONObject root = new JSONObject();
-        root.put("errors", processPool.mismatchedProcesses(successCode).size());
+        root.put("errors", processPool.mismatchedProcesses().size());
         root.put("processPool", processPool.toJSON()); 
         return root;
     }   

@@ -16,10 +16,10 @@ public class ProcessPool{
     public void addProcess(Process process){
         processList.add(process);
     }
-    public LinkedList<Process> mismatchedProcesses(String responseCode){
+    public LinkedList<Process> mismatchedProcesses(){
         LinkedList<Process> tempProcessList = new LinkedList<>();
         for(Process process: this.processList){
-            if(!process.checkResponse(responseCode)){
+            if(!process.checkResponse()){
                 tempProcessList.add(process);
             }
         }
@@ -28,12 +28,20 @@ public class ProcessPool{
 
     public JSONObject toJSON(){
         JSONObject root = new JSONObject();
-        JSONArray array = new JSONArray();
+        JSONArray successfulArray = new JSONArray();
+        JSONArray unsuccessfulArray = new JSONArray();
+
         for(Process process: processList){
-            array.put(process.toJSON());
+            if(process.checkResponse()) {
+                successfulArray.put(process.toJSON());
+            }
+            else {
+                unsuccessfulArray.put(process.toJSON());
+            }
         }
         root.put("serverName", serverName);
-        root.put("processes", array);
+        root.put("unsuccessfulProcesses", unsuccessfulArray);
+        root.put("successfulProcesses", successfulArray);
         return root;
     }
 
