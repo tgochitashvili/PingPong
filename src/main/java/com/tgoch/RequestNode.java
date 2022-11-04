@@ -92,8 +92,7 @@ public class RequestNode {
                                             .put("response", response)
                                             .put("requestDate", getFormattedRequestDate())
                                             .put("responseDate", getFormattedResponseDate())
-                                            .put("responseTime", "" + getDelta() + "ms")
-                .put("isSuccessful","" + getSuccess());
+                                            .put("responseTime", "" + getDelta() + "ms");
     }
 
     public boolean getSuccess(){

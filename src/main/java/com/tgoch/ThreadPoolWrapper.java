@@ -46,7 +46,10 @@ public class ThreadPoolWrapper{
     }
     public JSONObject toJSON(){
         JSONObject root = new JSONObject();
-        root.put("errors", processPool.mismatchedProcesses().size());
+        int numErrors = processPool.mismatchedProcesses().size();
+        int processPoolSize = processPool.getProcessList().size();
+        root.put("errors", numErrors);
+        root.put("successes", processPoolSize - numErrors);
         root.put("processPool", processPool.toJSON()); 
         return root;
     }   

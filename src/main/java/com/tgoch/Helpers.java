@@ -159,37 +159,24 @@ public class Helpers {
     }
 
     public static void log(LinkedList<ThreadPoolWrapper> threadPoolWrappers, boolean onlyErrors) throws IOException{
-        
-        FileWriter fWriter = null;
-        BufferedWriter bWriter =  null;
-        File out;
-       
         Path path = getLogPath();
-
         try{ 
             renameFilesToTemp(path);           
             for(ThreadPoolWrapper threadPoolWrapper: threadPoolWrappers){
-                try{
-                    String currTime = "" + System.currentTimeMillis();
-                    out = new File(path + "/" + threadPoolWrapper.getServerName() + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json"));
-                    fWriter = new FileWriter(out);
-                    bWriter = new BufferedWriter(fWriter);
+                String currTime = "" + System.currentTimeMillis();
+                String fileName = path
+                        + "/" + threadPoolWrapper.getServerName()
+                        + "-" + (currTime.substring(currTime.length()-5).hashCode() + ".json");
+                try(
+                        BufferedWriter bWriter = new BufferedWriter(
+                                new FileWriter(
+                                        fileName
+                                )
+                        )
+                ){
                     String log = threadPoolWrapper.toJSON().toString(4);
                     bWriter.write(log);
                 }
-        finally{
-            if(bWriter!=null){
-                bWriter.flush();
-                bWriter.close();
-            }
-            else{
-                if(fWriter!=null){
-                    fWriter.flush();
-                    fWriter.close();
-                }
-            }
-        }   
-                
             }
             deleteFiles(path, ".temp");
         }

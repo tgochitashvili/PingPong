@@ -7,13 +7,10 @@ import java.util.Scanner;
 public class Readers{
     public static LinkedList<ProcessPool> getProcessPoolsTxt(String urlPath, String serverPath, String token){
         LinkedList<ProcessPool> processList = new LinkedList<>();
-        Scanner urlScnr = null;
-        Scanner serverScnr = null;
-        try{
-            File urlFile = new File(urlPath);
-            urlScnr = new Scanner(urlFile);
-            File serverFile = new File(serverPath);
-            serverScnr = new Scanner(serverFile);
+        try(
+            Scanner urlScnr = new Scanner(new File(urlPath));
+            Scanner serverScnr = new Scanner(new File(serverPath));
+        ){
             LinkedList<String> servers = new LinkedList<>();
             LinkedList<String> urls = new LinkedList<>();
             while(serverScnr.hasNextLine()){
@@ -28,24 +25,13 @@ public class Readers{
         catch (Exception e){
             e.printStackTrace();
         }
-        finally {
-            if(urlScnr != null){
-                urlScnr.close();
-            }
-            if(serverScnr != null){
-                serverScnr.close();
-            }
-        }
         return processList;
     }
     
     public static LinkedList<ProcessPool> getProcessPoolsTxt(String urlPath){
         LinkedList<ProcessPool> processList = null;
         ProcessPool processPool;
-        Scanner scnr = null;
-        try{
-            File urlFile = new File(urlPath);
-            scnr = new Scanner(urlFile);
+        try(Scanner scnr = new Scanner(new File(urlPath))){
             LinkedList<String> urls = new LinkedList<>();
             while(scnr.hasNextLine()){
                 urls.add(scnr.nextLine());
@@ -60,11 +46,6 @@ public class Readers{
         }
         catch (Exception e){
             e.printStackTrace();
-        }
-        finally{
-            if(scnr != null){
-                scnr.close();
-            }
         }
         return processList;
     }
